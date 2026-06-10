@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <title>ESP Aquarium CS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="karmag">
+  <meta name="description" content="ESP32 Aquarium CS">
+  <link rel="icon" type="image/svg+xml" href="aqua.svg">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  
+  <script src="script.js"></script> 
+  
+</head>
+<body>
+  <div id="nav-placeholder"></div>  <!-- navigacni menu -->
+  
+  <div class="content">
+    <div class="cards">
+      
+      <div class="card led-card-inner">                 <!-- LED1 -->
+          <div class="card-row icon-row">
+            <i class="fas fa-sun" style="color:Gold;"></i>
+          </div>
+
+          <div class="card-row label-row">
+            <span class="label-text">LED 1</span>
+            <span id="statusLed1" class="status-badge">--</span>
+          </div>
+
+          <div class="reading">
+            <span style="color: Gray;" id="SPled1">--</span> / 
+            <span id="AVled1">--</span> &percnt;
+          </div>
+          <!--<a href="LED1.html" class="card-link"></a>-->
+      </div>
+      
+      <div class="card led-card-inner">                 <!-- LED2 -->
+          <div class="card-row icon-row">
+              <i class="fas fa-sun" style="color:Gold;"></i>
+          </div>
+
+          <div class="card-row label-row">
+              <span class="label-text">LED 2</span>
+              <span id="statusLed2" class="status-badge">--</span>
+          </div>
+
+          <div class="reading">
+              <span style="color: Gray;" id="SPled2">--</span> / 
+              <span id="AVled2">--</span> &percnt;
+          </div>
+          <!--<a href="LED2.html" class="card-link"></a>-->
+      </div>
+      
+      <div class="card">                                <!-- TC -->
+          <p><i class="fas fa-thermometer-half" style="color:DimGrey;"></i>
+              TEPL. KRYT
+              <span class="reading">
+              <span id="tempCover">--</span> &deg;C</span>
+          </p>
+          <!--<a href="TC.html" class="card-link"></a>-->
+      </div>
+      
+      <div class="card">                                <!-- HC -->
+          <p><i class="fas fa-tint" style="color:DimGrey;"></i>
+              VLHKOST
+              <span class="reading">
+              <span id="humCover">--</span> &percnt;</span>
+          </p>
+          <!--<a href="HC.html" class="card-link"></a>-->
+      </div>
+
+      <div class="card">                                <!-- TW -->
+          <p><i class="fas fa-thermometer-half" style="color:DodgerBlue;"></i>
+              TEPL. VODA
+              <span class="reading">
+              <span style="color:Gray;" id="SPtempWater">--</span> / 
+              <span id="tempWater">--</span> &deg;C</span>
+          </p>
+          <!--<a href="TW.html" class="card-link"></a>-->
+      </div>
+      
+      <div class="card led-card-inner">                 <!-- PH -->
+          <div class="card-row icon-row">
+              <i class="fas fa-leaf" style="color:Green;"></i>
+          </div>
+          
+          <div class="card-row label-row">
+              <span class="label-text">PH VODA</span>                 
+              <span id="statusPH" class="status-badge">--</span>
+          </div> 
+                 
+          <div class="reading">  
+              <span style="color:Gray;" id="SPphWater">--</span> / 
+              <span id="phWater">--</span></span>
+          </div>
+          <!--<a href="PHCO2.html" class="card-link"></a>-->
+      </div>
+      
+      <div class="card">                                <!-- QF -->
+        <p><i class="fas fa-spinner" style="color:DodgerBlue;"></i>
+            PRŮTOK
+            <span class="reading">
+            <span id="flowWater">--</span> L/MIN</span>
+        </p>
+        <!--<a href="QF.html" class="card-link"></a>-->
+      </div>
+      
+      <div class="card">                                <!-- CH -->
+        <p><i class="fas fa-exchange-alt" style="color:DodgerBlue;"></i>
+            VÝMĚNY
+            <span class="reading">
+            <span id="AVchanges">--</span> h<sup>-1</sup> / 
+            <span id="TMchanges">--</span> x</span>
+        </p>
+        <!--<a href="QF.html" class="card-link"></a>-->
+      </div>      
+
+      <div class="card">                                <!-- WL -->
+         <p><i class="fas fa-arrow-alt-circle-down" style="color:DodgerBlue;"></i>
+            HLADINA
+            <span class="reading">
+            <span id="levelWater">--</span> CM</span>
+         </p>
+         <!--<a href="WL.html" class="card-link"></a>-->
+      </div>
+        
+      <div class="card">                                <!-- ALARM -->  
+        <p><i id="alarmIcon" class="fas fa-bell" style="color:Grey;"></i>
+            ALARM
+            <span class="reading">
+            <span id="alarmNo">--</span></span>
+        </p>
+        <!--<a href="alarm.html" class="card-link"></a>-->
+      </div>  
+    </div>
+    
+  </div>
+  
+  <div id="footer-placeholder"></div>
+ 
+  <script>
+      // Spustí se okamžitě po načtení HTML (nečeká na velké obrázky)
+      refreshAllData();
+      // Poté spustí pravidelnou smyčku
+      setInterval(refreshAllData, 5000);
+  </script>
+</body>
+</html>

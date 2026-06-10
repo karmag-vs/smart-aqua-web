@@ -1,0 +1,823 @@
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css");
+
+/* --- 1. PROMĚNNÉ A RESET --- */
+:root {
+    --bg-color: #1a1a1a;       /* Tmavé pozadí */
+    --card-bg: #262626;        /* Pozadí karet a modálů */
+    --text: #eeeeee;           /* Hlavní text */
+    --accent: #2ecc71;         /* Akvarijní zelená */
+    --accent-dim: #27ae60;
+    --danger: #e74c3c;         /* Červená (Vypnuto/Alarm) */
+    --warning: #f39c12;        /* Oranžová (Ručně) */
+    --border: #333333;         /* Barva linek */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text);
+}
+
+/* --- 2. ROZVRŽENÍ (LAYOUT) --- */
+.content {
+    padding: 15px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
+
+/* --- 3. NAVIGACE (SIDEBAR) --- */
+/*.top-header {
+    background-color: #111;
+    display: flex;
+    align-items: center;
+    padding: 20px 15px;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    border-bottom: 1px solid var(--border);
+}*/
+.top-header {
+    background-color: #111;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between; /* Rozmístí prvky ke krajům */
+    align-items: center;
+    padding: 10px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    min-height: 60px; /* Zajistí stabilní výšku */
+} 
+/* Levá skupina (Menu, Ikony, Nadpis) */
+.header-left-section, .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.header-status-icons {
+    display: flex;
+    gap: 8px;
+    color: var(--accent);
+    font-size: 1.1rem;
+}
+.header-title {
+    position: absolute;  
+    left: 50%;            
+    transform: translateX(-50%);
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--accent);
+    white-space: nowrap;  
+    pointer-events: none; 
+}
+ /* Pravá skupina (Datum, Čas, Domeček) */
+.header-right-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+   
+.header-datetime {
+    display: flex;
+    flex-direction: column;    /* Řádky pod sebou */
+    align-items: flex-end;     /* Zarovnání doprava k domečku */
+    justify-content: center;
+    margin-right: 8px;        /* Mezera od domečku */
+    line-height: 1.2;          /* Menší mezera mezi řádky */
+}
+
+.date-row {
+    font-size: 0.6rem;         /* Menší font pro datum */
+    color: #666;               /* Světlejší šedá */
+    font-weight: bold;
+}
+
+.time-row {
+    font-size: 0.85rem;        /* Výraznější font pro čas */
+    color: #aaa;               /* Trochu jasnější šedá */
+    font-family: monospace;    /* Fixní šířka číslic */
+}
+
+.header-home a:hover {
+    color: var(--accent);
+}
+
+.hamburger, .header-home a { 
+    font-size: 1.4rem; 
+    color: var(--text); 
+    cursor: pointer; 
+    text-decoration: none; 
+}
+
+/* Základní styl pro rybku */
+.feeder-icon {
+    margin-left: 5px;
+    margin-right: 15px;        /* Mezera od názvu stránky */
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+    color: #555; /* Výchozí barva - šedá */
+}
+
+.feeder-active {            /* Zelená - Krmítko je online a vše je nastaveno */
+    color: #2ecc71 !important;
+    filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.5));
+}
+.feeder-error {             /* Červená - Krmítko je online, ale dávky jsou vypnuté */
+    color: #e74c3c !important; 
+} 
+.feeder-offline {           /* Šedá - Krmítko není dostupné */
+    color: #777777 !important; 
+} 
+.feeder-empty {             /* Zluta - Krmítko prazdne */
+    color: #ffd966 !important; 
+} 
+
+.sidebar {
+    height: 100%; width: 0; position: fixed; z-index: 2001;
+    top: 0; left: 0; background-color: #111; overflow-x: hidden;
+    transition: 0.3s; padding-top: 60px;
+}
+.sidebar-header h3 {
+    margin: 0;
+    padding-left: 32px;
+    color: var(--accent); /* Zelená barva pro nadpis */
+    font-size: 1.2rem;
+}
+.sidebar.open { width: 250px; }
+.sidebar a {
+    padding: 15px 25px; text-decoration: none; font-size: 1.1rem;
+    color: #888; display: block; transition: 0.2s;
+}
+.sidebar a:hover, .sidebar a.active { color: var(--accent); background: #1a1a1a; }
+
+.overlay {
+    display: none; position: fixed; width: 100%; height: 100%;
+    top: 0; left: 0; z-index: 2000; background: rgba(0,0,0,0.7);
+}
+.overlay.show { display: block; }
+
+/* --- 4. KARTY (INDEX & LED) --- */
+.cards {
+display: grid;
+    grid-template-columns: 1fr 1fr; /* Přesně dva sloupce (každý 1 frakce) */
+    gap: 12px;                      /* Mezera mezi kartami */
+    max-width: 800px;               /* Omezení celkové šířky, aby na PC nebyly karty obrovské */
+    margin: 0 auto;                 /* Vycentrování celého bloku karet */
+    padding: 5px;
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    
+    position: relative;
+    
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    /* PEVNÉ ROZMĚRY */
+    width: 100%;            /* Shodné s šířkou tlačítek */
+    height: 120px;           /* Pevná výška */
+    margin: 0 auto;          /* Vycentrování karty v mřížce */
+    /* VYCENTROVÁNÍ OBSAHU UVNITŘ */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Vycentruje vertikálně */
+    align-items: center;     /* Vycentruje horizontálně */
+    text-align: center;
+    gap: 10px;
+    overflow: hidden;
+}
+/* Úprava textu uvnitř karty pro pevnou výšku */
+.card p { margin: 0; 
+    font-size: 1rem; 
+    display: flex; 
+    flex-direction: column;  /* Ikona a text budou pod sebou nebo v těsném bloku */
+    align-items: center; 
+    gap: 5px; 
+}
+    
+.card .reading { 
+    margin-left: 0;  /* 0 - aby to bylo uprostřed */
+    font-size: 1.2rem;
+    font-weight: bold; 
+    color: var(--text);
+}
+
+.card-link { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 1; }
+
+/* Styl pro prázdnou kartu, aby nebyla úplně "mrtvá" */
+.empty-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-style: dashed; /* Volitelné: čárkovaný okraj pro prázdnou kartu */
+    opacity: 0.5;
+}
+
+/* --- 5. TLAČÍTKA --- */
+/* Sjednocení tlačítek Uložit / Přidat / Akce */
+.btn-save, .btn-add, .btn-action {
+    width: 200px;           /* Pevná šířka pro všechna hlavní tlačítka */
+    margin: 10px auto;      /* Vycentrování horizontálně a mezera nahoře */
+    display: flex;          /* Nutné pro správné centrování textu a ikon */
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+    gap: 15px;              /* MEZERA MEZI IKONOU A TEXTEM */
+}
+
+/* Specifické barvy pro OVLÁDÁNÍ / PLÁNOVAČ (ta šedá) */
+.btn-action { 
+    background: #333; 
+    color: var(--accent); 
+    border: 1px solid #444; 
+}
+.btn-action:hover {
+    background: #444;
+}
+/* Specifické barvy pro ULOŽIT / PŘIDAT (ta zelená) */
+.btn-save, .btn-add { 
+    background: var(--accent); 
+    color: white; 
+    border: none;
+}
+
+/* Hover efekty */
+.btn-save:hover, .btn-add:hover { 
+    background: var(--accent-dim); 
+}
+
+.btn-add:disabled {
+    background-color: #444 !important; /* Tmavě šedá */
+    color: #888 !important;            /* Světle šedý text */
+    cursor: not-allowed;               /* Změní kurzor myši na přeškrtnutý kruh */
+    opacity: 0.6;
+}
+
+
+/* Tlačítka přizpůsobená pro mřížku (Grid) */
+.grid-btn {
+    width: 100% !important; /* Musí vyplnit celý sloupec mřížky */
+    height: 80px;           
+    margin: 0;               /* Reset okrajů */
+    font-size: 0.9rem;
+    flex-direction: column;  /* Ikona nad textem pro lepší vzhled v úzkém sloupci */
+    gap: 8px;
+}
+
+.grid-btn i {
+    font-size: 1.5rem;
+}
+
+/* --- 6. TABULKY (DENÍK & PLÁNOVAČ) --- */
+.table-container, .modal-table-wrapper { 
+    overflow-x: auto; 
+    background: var(--card-bg);
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+table { width: 100%; border-collapse: collapse; }
+th { background: #111; color: #888; font-size: 0.75rem; text-transform: uppercase; padding: 12px 8px; }
+td { padding: 10px 8px; border-bottom: 1px solid var(--border); text-align: center; }
+
+/* Kompaktní tabulka pro scheduler v modálu */
+.compact-table input[type="number"] {
+    width: 46px; 
+    background: #111; 
+    color: white; 
+    border: 1px solid #444;
+    padding: 6px; 
+    border-radius: 4px; 
+    text-align: center; 
+    outline: none;
+}
+
+.compact-table input[type="number"]:focus {
+    border-color: var(--accent); /* Při kliknutí se rámeček rozsvítí zeleně */
+}
+
+/* --- 7. MODÁLNÍ OKNA --- */
+.modal {
+    display: none; position: fixed; z-index: 3000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: var(--card-bg); 
+    margin: 10% auto; 
+    padding: 25px;
+    width: 90%; 
+    max-width: 680px; 
+    border-radius: 15px; 
+    border: 1px solid #444;
+}
+
+.modal-content h2 { 
+    margin-top: 0; 
+    color: var(--accent); 
+    font-size: 1.3rem; 
+    }
+
+.modal-header {             /* Celá hlavička modálu */
+    display: flex;
+    justify-content: space-between;/* Nadpis vlevo, ovládání vpravo */
+    align-items: center;           /* VERTIKÁLNÍ CENTROVÁNÍ VŠEHO */
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 15px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;    /* Centrování ikony uvnitř nadpisu */
+    color: var(--accent);
+    font-size: 1.3rem;
+}
+/* Skupina tlačítka a křížku */
+.modal-controls {
+    display: flex;
+    align-items: center;           /* VERTIKÁLNÍ CENTROVÁNÍ tlačítka a křížku */
+    gap: 15px;                     /* MEZERA MEZI TLAČÍTKEM A KŘÍŽKEM */
+}
+
+#chartModalHeader i {
+    margin-right: 10px;
+    font-size: 1.3rem; 
+    color: var(--accent);
+}
+
+.btn-modal {             /* Tlačítko intervalu v modálu */
+    background: #333;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: 0.2s;
+    white-space: nowrap;    /* Aby se text nezalomil */
+}
+
+.btn-modal:hover {
+    background: var(--accent);
+    color: white;
+}
+
+.close-btn {                /* Křížek pro zavření */
+    float: right; 
+    font-size: 30px; 
+    cursor: pointer; 
+    color: #888; 
+    line-height: 1;         /* Pomáhá s výškovým centrováním */
+    user-select: none;
+    }
+    
+.close-btn:hover {
+    color: var(--danger);
+}
+
+/* Styl pro přepínač režimů v modálu */
+.mode-selector {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border);
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 12px 5px;
+    border: 1px solid var(--border);
+    background: #333;
+    color: #eee;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+/* Styl samotného slideru pro lepší ovládání */
+.main-slider {
+    width: 100%;
+    height: 12px;
+    border-radius: 10px;
+    background: #333;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.main-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 3px solid #eee;
+}
+
+/* --- BARVY AKTIVNÍCH TLAČÍTEK REŽIMŮ (v modálu LED) --- */
+.mode-btn.active-vyp { 
+    background-color: var(--danger) !important; 
+    border-color: #ff5f4d; 
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
+}
+.mode-btn.active-man { 
+    background-color: var(--warning) !important; 
+    border-color: #ffb84d;
+    color: #000; /* Černý text pro lepší čitelnost na oranžové */
+}
+.mode-btn.active-auto { 
+    background-color: var(--accent) !important; 
+    border-color: #58d68d;
+}
+
+input[type="range"] { width: 100%; margin: 20px 0; accent-color: var(--accent); }
+
+/* --- 8. STATUSY --- */
+.status-badge {
+    padding: 2px 8px; 
+    border-radius: 10px; 
+    font-size: 0.7rem;
+    font-weight: bold; 
+    color: white; 
+    text-transform: uppercase;
+    width: 60px;
+}
+.status-vyp { background: var(--danger); }
+.status-man { background: var(--warning); }
+.status-auto { background: var(--accent); }
+
+/* --- 9. FOOTER --- */
+#footer-placeholder {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.main-footer {
+    padding: 15px 15px; 
+    text-align: center; 
+    color: #555; 
+    font-size: 0.8rem;
+    background-color: #111; 
+    border-top: 1px solid var(--border); 
+    margin-top: 0px;
+    line-height: 0.8;
+}
+.main-footer strong { 
+    color: var(--accent); 
+}
+
+.footer-logo {
+    width: 18px;               /* Velikost ikony */
+    height: 18px;
+    vertical-align: middle;    /* Vycentrování na střed výšky textu */
+    margin: 0 5px 0 8px;      /* Odsazení: vlevo od roku a vpravo od textu */
+    border-radius: 3px;        /* Volitelné: jemné zaoblení rohů */
+}
+
+.footer-content p {
+    margin: 5px 0;
+    display: flex;             /* Pomůže s přesným zarovnáním prvků na řádku */
+    align-items: center;
+    justify-content: center;
+    gap: 5px;                  /* Alternativní způsob odsazení prvků */
+    
+}
+/* --- STYLY PRO DENÍK (note.html) --- */
+
+/* Mřížka pro aktivity v modálu */
+.activity-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dva sloupce vedle sebe */
+    gap: 15px;
+    margin: 20px 0;
+}
+
+/* Kontejner pro stylový checkbox */
+.check-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #eee;
+    gap: 10px;
+}
+
+.check-container input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--accent); /* Zelená barva pro zaškrtnutí */
+    cursor: pointer;
+}
+
+/* Vstup pro litry v modálu */
+.modal-input {
+    width: 64px;
+    padding: 8px;
+    background: #111;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: white;
+    font-size: 1rem;
+    text-align: right;
+}
+
+/* Ikony v seznamu aktivit */
+.check-container i {
+    width: 20px;
+    text-align: center;
+    color: var(--accent);
+}
+
+/* Skrytí šipek pro Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Skrytí šipek pro Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+
+/* Kontejner pro vnitřní rozložení karty */
+.led-card-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;    /* Vycentrování všeho na střed */
+    justify-content: center;
+    gap: 8px;               /* Mezera mezi řádky */
+    padding: 15px !important;
+    text-align: center;
+}
+
+/* 1. Řádek: Ikona */
+.icon-row i {
+    font-size: 1.1rem;      /* ikona nahoře */
+    margin-bottom: 2px;
+}
+
+/* 2. Řádek: Text a badge */
+.label-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+/* Modal - Nastaveni snimacu*/
+.full-width { grid-column: span 2; }
+
+.control-group label {
+    display: block;
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-bottom: 5px;
+}
+
+.status-row-modal {
+    display: flex;
+    justify-content: left;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.badge-mini {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    background: #444;
+    color: white;
+    text-transform: uppercase;
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+/* Vynutí, aby tabulka zabrala celou šířku a řádky byly dost vysoké */
+.compact-table {
+    display: table !important;
+    width: 100% !important;
+    min-height: 150px;
+}
+
+.compact-table tr {
+    display: table-row !important;
+    height: 45px !important;
+}
+
+.compact-table td {
+    display: table-cell !important;
+    vertical-align: middle !important;
+}
+
+/* Kontejner pro obsah pod černou lištou (NTP, Synchro...) */
+.section-content {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.01);
+    border-radius: 0 0 4px 4px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Styl pro texty vedle checkboxů a v inputech */
+.section-content span {
+    color: #eee;
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+.label-text {
+    color: #eee;
+    font-weight: 400;
+}
+
+/* Černá lišta (nadpis sekce) stejná jako th v tabulce */
+.section-header {
+    background-color: #111;
+    color: #888;
+    font-size: 0.75rem;
+    font-family: 'Segoe UI', sans-serif;
+    text-transform: uppercase;
+    padding: 12px 20px;
+    /*border-bottom: 1px solid #333;*/
+    /*font-weight: 600;*/
+    /*letter-spacing: 1.5px;*/
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    height: 45px !important;
+}
+
+/* Mezera pro ikonu v hlavičce */
+.section-header i {
+    margin-right: 10px;
+}
+
+.reading sup {
+    font-size: 0.6em !important;
+    vertical-align: super;
+}
+
+/* Oprava zobrazení plánovače na mobilech */
+@media screen and (max-width: 480px) {
+    /* Zmenšíme padding v buňkách, aby zbylo víc místa na prvky */
+    .compact-table td {
+        padding: 5px 2px !important;
+        font-size: 0.85rem;
+    }
+
+    /* Vynutíme pevnou šířku pro čas, aby se neroztahoval */
+    .compact-table input[type="time"] {
+        width: 48px !important;
+        padding: 2px 4px !important;
+        font-size: 0.9rem !important;
+        letter-spacing: -1px; /* Mírně smrskne text času */
+    }
+
+    /* Zmenšíme šířku pro číselný vstup (výkon/hodnota) */
+    .compact-table input[type="number"] {
+        width: 48px !important;
+        padding: 2px 2px !important;
+    }
+
+    /* Zmenšíme tlačítka pro smazání, aby nezabírala celý sloupec */
+    .compact-table .btn-modal-delete {
+        padding: 5px 8px !important;
+        font-size: 0.8rem;
+    }
+    
+    /* Odstraníme nepotřebné okraje kolem inputů */
+    .compact-table input {
+        margin: 0 !important;
+    }
+	
+	.days-cell {
+        gap: 1px !important; /* Ještě těsnější dny u sebe */
+    }
+    
+    .days-cell input[type="checkbox"] {
+        width: 14px; /* Menší čtverečky na mobilu */
+        height: 14px;
+    }
+}
+
+/* Aby inputy v modálu vypadaly dobře a nebyly moc úzké */
+.settings-table input[type="time"],
+.settings-table input[type="number"] {
+    width: 100px !important; /* V modálu chceme širší pole než v tabulce plánovače */
+    text-align: center;
+}
+/* Styl pro checkboxy v tabulce nastavení */
+.settings-table input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #2ecc71; /* Zelená barva po zaškrtnutí - ladí s tlačítkem Save */
+    background: #000;
+}
+/* Hlavička tabulky v modálu pro lepší přehlednost */
+.settings-table th {
+    color: #888;
+    font-size: 0.8rem;
+    text-align: left;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+}
+/* --- SPECIFICKÉ DOPLŇKY PRO DÁVKOVAČ --- */
+
+/* Hlavní kontejner pro řadu pump */
+/* Kontejner pro celou řadu (v kartě span 2) */
+.pumps-container {
+    display: flex;
+    justify-content: space-around; /* Rovnoměrné rozestupy mezi sloupci */
+    align-items: flex-start;
+    width: 100%;
+    padding: 5px 0;
+}
+
+/* Vertikální sloupeček pro jednu pumpu */
+.pump-column {
+    display: flex;
+    flex-direction: column; /* Vše pod sebou */
+    align-items: center;    /* Centrování na střed sloupce */
+    gap: 8px;               /* Mezery mezi textem a barem */
+    flex: 1;                /* Každý sloupec zabere stejné místo */
+}
+
+.pump-name {
+    font-size: 0.75rem;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+/* Vizuální bar (nádržka) */
+.tank-container {
+    width: 25px;       /* O něco širší pro lepší viditelnost */
+    height: 70px;      /* Výška baru */
+    border: 1px solid #555;
+    background: #111;  /* Pozadí prázdné nádrže */
+    position: relative;
+    border-radius: 2px;
+}
+
+.tank-fill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: white; /* Bílá náplň z pump1.jpg */
+    transition: height 0.5s ease-in-out;
+}
+
+/* Procenta pod barem */
+.tank-percent {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--accent); /* Tvá zelená z note.html */
+}
+
+/* Třída pro neaktivní/nenainstalovanou pumpu */
+.pump-disabled {
+    filter: grayscale(100%) !important;
+    opacity: 0.35 !important;
+    pointer-events: none; /* Volitelné: na vypnutou pumpu nepůjde kliknout */
+    transition: all 0.4s ease;
+}
+
+/* Karta přes celou šířku mřížky */
+.fert-card-wide {
+    grid-column: span 2 !important;
+    padding: 15px 5px !important;
+    height: auto !important;
+}
+
+
