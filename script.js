@@ -1,5 +1,5 @@
 // --- 1. PŘIPOJENÍ K MQTT BROKERU (přes zabezpečené WebSockets) ---
-const client = mqtt.connect('wss://broker.hivemq.com:8083/mqtt');
+const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
 client.on('connect', () => {
     console.log('Připojeno k MQTT Brokeru z GitHubu');
