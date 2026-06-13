@@ -198,7 +198,7 @@ function createNavbar() {
     const placeholder = document.getElementById('nav-placeholder');
     if (!placeholder) return; // Pokud prvek neexistuje, ukonči funkci a nepokračuj
     const pageTitles = {
-        "index.html": "AQUA CS",      // vloží se jako titulek stránky
+        "index.html": "AQUARIUM CS",      // vloží se jako titulek stránky
         "LED1.html" : "LED 1",
         "LED2.html" : "LED 2",
         "TC.html"   : "TEPLOTA KRYT",
@@ -252,7 +252,7 @@ function createFooter() {
             <p>
                 &copy; ${year} 
                 <img src="aqua.svg" class="footer-logo" alt="logo">
-                <strong>Smart Aqua CS</strong>&nbsp;&nbsp;Verze <span id="info-sw">---</span>
+                <strong>Aqua CS</strong>&nbsp;&nbsp;Verze <span id="info-sw">---</span>
             <p>
             <p>
                 <i class="fas fa-microchip"></i> <span id="info-hw">---</span>&nbsp;&nbsp;
