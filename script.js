@@ -131,7 +131,7 @@ client.on('message', (topic, payload) => {
             updateLedStatus(2, data.ledMode2, data.AVled2);
 			if (data.statusPH !== undefined) {                  			// BARVY pro auto/rucne zav/rucne-vyp
 				const val = parseInt(data.statusPH);
-				lastStatus.phMode = val; // Uložíme pro potřeby modálu
+				//lastStatus.phMode = val; // Uložíme pro potřeby modálu
 				
 				const badge = document.getElementById("statusPH");
 				if (badge) {
