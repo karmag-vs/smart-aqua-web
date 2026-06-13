@@ -80,7 +80,7 @@ function updateElement(id, value, decimals = 0, divider = 1) {
         }
     }
 }
-
+// ZAHLAVI STRANKY
 function createNavbar() {
     const placeholder = document.getElementById('nav-placeholder');
     if (!placeholder) return; // Pokud prvek neexistuje, ukonči funkci a nepokračuj
@@ -124,35 +124,85 @@ function createNavbar() {
             </div>
         </div>    
     </div>
-    <!--div id="mySidebar" class="sidebar">
-        <div class="sidebar-header">
-            <h3>MENU</h3>
-            <hr>
-        </div>
-        <a href="index.html"><i class="fas fa-home"></i> PŘEHLED</a>
-        <a href="LED1.html"><i class="fas fa-sun"></i> LED 1</a>
-        <a href="LED2.html"><i class="fas fa-sun"></i> LED 2</a>
-        <a href="settings.html"><i class="fas fa-cog"></i> NASTAVENÍ</a>
-        <a href="note.html"><i class="fas fa-clipboard-list"></i> POZNÁMKY</a>
-        <a href="feeder.html"><i class="fas fa-fish"></i> KRMENÍ</a>
-		<a href="fertdoser.html"><i class="fas fa-flask"></i> DÁVKOVAČ</a>
-        <a href="alarm.html"><i class="fas fa-exclamation-triangle"></i> PORUCHY</a>
-    </div>
-
-    <div id="overlay" class="overlay" onclick="toggleMenu()"></div-->
     `;
-    
     placeholder.innerHTML = navHTML;
-    // Automatické zvýraznění aktivní stránky
-    highlightActiveLink();
 }
+// ZAPATI STRANKY
+function createFooter() {
+    const placeholder = document.getElementById('footer-placeholder');
+    if (!placeholder) return; // Pokud prvek neexistuje, ukonči funkci a nepokračuj
+    
+    const year = new Date().getFullYear();
+    const footerHTML = `
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>
+                &copy; ${year} 
+                <img src="aqua.ico" class="footer-logo" alt="logo">
+                <strong>Smart Aqua CS</strong>&nbsp;&nbsp;Verze <span id="info-sw">---</span>
+            <p>
+            <p>
+                <i class="fas fa-microchip"></i> <span id="info-hw">---</span>&nbsp;&nbsp;
+                <i class="fas fa-code"></i> K2IR
+            </p>
+        </div>
+    </footer>`;
+    placeholder.innerHTML = footerHTML;
+}
+// SYSTEM INFO
+function loadSystemInfo() {
+    // Pokud už info máme v paměti prohlížeče, netrapme ESP32 dalším požadavkem
+    const cachedSw = sessionStorage.getItem('info-sw');
+    const cachedHw = sessionStorage.getItem('info-hw');
 
-function highlightActiveLink() {
-    const currentPath = window.location.pathname.split("/").pop() || "index.html";
-    const links = document.querySelectorAll('.sidebar a');
-    links.forEach(link => {
-        if (link.getAttribute('href') === currentPath) {
-            link.classList.add('active');
-        }
-    });
+    if (cachedSw && cachedHw) {
+        if (document.getElementById('info-sw')) document.getElementById('info-sw').innerText = cachedSw;
+        if (document.getElementById('info-hw')) document.getElementById('info-hw').innerText = cachedHw;
+        return;
+    }
+    fetch('/getSystemInfo')
+        .then(response => response.json())
+        .then(data => {
+            sessionStorage.setItem('info-sw', data.sw_ver);
+            sessionStorage.setItem('info-hw', data.hw_ver);
+            const swEl = document.getElementById('info-sw');
+            const hwEl = document.getElementById('info-hw');
+            
+            if (swEl) swEl.innerText = data.sw_ver;
+            if (hwEl) hwEl.innerText = data.hw_ver;
+        })
+        .catch(err => console.error("Chyba při načítání info:", err));
+}
+// VOLANI FUNKCI
+window.addEventListener('load', () => {
+    createNavbar(); // hlavička stránky + menu
+    createFooter(); // patička
+    createModals(); // vyskakovací okna (grafy, nastavení senzorů)
+    loadSystemInfo();
+    setInterval(updateClock, 1000);
+    //refreshAllData();
+    //setInterval(refreshAllData, 5000);
+});
+// HODINY
+function updateClock() {
+    const dateEl = document.getElementById('header-date');
+    const timeEl = document.getElementById('header-time');
+    if (!dateEl || !timeEl) return;
+
+    // Vypočítáme aktuální čas v ESP32 na základě offsetu (synchronizovaného v refreshAllData)
+    const now = new Date(Date.now() + serverTimeOffset);
+    
+    // Formát ČASU
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    
+    // Formát DATUMU
+    const DD = String(now.getDate()).padStart(2, '0');
+    const MM = String(now.getMonth() + 1).padStart(2, '0');
+    const YYYY = now.getFullYear();
+
+    // Vložení do HTML
+    dateEl.innerText = `${DD}.${MM}.${YYYY}`;
+    timeEl.innerText = `${hh}:${mm}:${ss}`;
 }
