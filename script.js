@@ -55,8 +55,11 @@ client.on('message', (topic, payload) => {
             writeValue("SPphWater", myObj.SPphWater);
             writeValue("levelWater", myObj.levelWater);
             writeValue("flowWater", myObj.flowWater);
-            writeValue("AVchgs", myObj.AVchgs);
-            writeValue("TMchgs", myObj.TMchgs);
+            writeValue("AVchanges", myObj.AVchgs);
+            //writeValue("TMchanges", myObj.TMchgs);
+            let tmVal = Number(data.TMchgs);
+            let tmDecimals = (tmVal < 10.0) ? 1 : 0;
+            updateElement("TMchanges", data.TMchgs, tmDecimals);
             writeValue("ntpTime", myObj.ntpTime);
             
             // Zpracování alarmu (pokud existuje prvek alarmNo)
