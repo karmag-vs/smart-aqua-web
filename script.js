@@ -4,7 +4,15 @@ const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 client.on('connect', () => {
     console.log('Připojeno k MQTT Brokeru z GitHubu');
     // Přihlásíme se k odběru tématu, kam ESP32 posílá data
-    client.subscribe('smart_aqua_cs/data/vystup');
+    client.subscribe('smart_aqua_cs/data/vystup', (err) => {
+        if (!err) {
+            console.log('Úspěšně přihlášeno k odběru tématu smart_aqua_cs/data/vystup');
+            // Teprve po úspěšném přihlášení si poprvé vyžádáme data
+            client.publish('smart_aqua_cs/data/pozadavek', 'updateAll');
+        } else {
+            console.error('Chyba při přihlášení k odběru:', err);
+        }
+    });
     
     // Hned po připojení si jednou vyžádáme data
     client.publish('smart_aqua_cs/data/pozadavek', 'updateAll');
