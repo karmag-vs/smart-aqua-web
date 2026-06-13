@@ -184,6 +184,8 @@ function loadSystemInfo() {
         console.log("Žádám ESP32 o systémové informace přes MQTT...");
         // Pošleme požadavek do stejného tématu jako "updateAll", ale s jiným textem
         client.publish('smart_aqua_cs/data/pozadavek', 'getSystemInfo');
+    } else {
+        console.warn("Nelze vyžádat systémové info, MQTT klient není připojen.");
     }
 }
 // VOLANI FUNKCI
