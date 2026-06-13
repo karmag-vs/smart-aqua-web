@@ -1,3 +1,5 @@
+// Globální proměnná pro synchronizaci času s ESP32 (výchozí offset je 0)
+let serverTimeOffset = 0;
 // --- 1. PŘIPOJENÍ K MQTT BROKERU (přes zabezpečené WebSockets) ---
 const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
@@ -281,7 +283,8 @@ function updateClock() {
     if (!dateEl || !timeEl) return;
 
     // Vypočítáme aktuální čas v ESP32 na základě offsetu (synchronizovaného v refreshAllData)
-    const now = new Date(Date.now() + serverTimeOffset);
+    const offset = (typeof serverTimeOffset !== 'undefined') ? serverTimeOffset : 0;
+    const now = new Date(Date.now() + offset);
     
     // Formát ČASU
     const hh = String(now.getHours()).padStart(2, '0');
