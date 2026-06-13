@@ -28,6 +28,7 @@ setInterval(() => {
 
 // --- 3. PŘÍJEM DAT Z ESP32 ---
 client.on('message', (topic, payload) => {
+    console.log("!!! DOŠLA MQTT ZPRÁVA !!! Téma:", topic);
     if (topic === 'smart_aqua_cs/data/vystup') {
         try {
             // Převedeme text na JSON objekt
