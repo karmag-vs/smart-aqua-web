@@ -125,6 +125,8 @@ client.on('message', (topic, payload) => {
 					}
 				}
 			}
+			updateLedStatus(1, data.ledMode1, data.AVled1);  	// LED - STATUS
+            updateLedStatus(2, data.ledMode2, data.AVled2);
 			
 			if (data.datetime) {                                
                 serverTimeOffset = (data.datetime * 1000) - Date.now(); // Spočítáme rozdíl mezi časem v prohlížeči a v ESP32
@@ -271,4 +273,62 @@ function updateClock() {
     // Vložení do HTML
     dateEl.innerText = `${DD}.${MM}.${YYYY}`;
     timeEl.innerText = `${hh}:${mm}:${ss}`;
+}
+// STATUS LED, CO2
+function updateLedStatus(num, mode, power) {
+    const badge = document.getElementById(`statusLed${num}`);
+    if (!badge) return;
+
+    // 1. Vyčištění starých stylů
+    badge.classList.remove('status-vyp', 'status-man', 'status-auto');
+    badge.style.backgroundColor = ""; 
+
+    let text = "--";
+    let className = "";
+    let bgColor = "";
+
+    // 2. Logika pro určení stavu
+    if (mode == 0) {
+        text = "VYP";
+        className = "status-vyp";
+    } else if (mode == 1) {
+        text = "RUČNĚ";
+        className = "status-man";
+    } else if (mode == 2) {
+        // Režim AUTOMAT - rozhodujeme podle výkonu (power)
+        className = "status-auto";
+        if (Number(power) > 0) {
+            text = "A-ZAP";
+            bgColor = "#2ecc71"; // Zelená (stejná jako u PH)
+        } else {
+            text = "A-VYP";
+            bgColor = "#3498db"; // Modrá (stejná jako u PH)
+        }
+    }
+
+    // 3. Aplikace textu a barev na badge
+    badge.innerText = text;
+    if (className) badge.classList.add(className);
+    if (bgColor) badge.style.backgroundColor = bgColor;
+
+    // 4. Update tlačítek v MODÁLU (pokud je otevřený pro tuto LED)
+    const modal = document.getElementById("controlModal");
+    const slider = document.getElementById("controlSlider");
+    
+    if (modal && modal.style.display === "block" && slider) {
+        const currentOpenedLed = slider.getAttribute("data-led-num");
+        if (currentOpenedLed == num) {
+            // Reset aktivních tříd na tlačítkách v modálu
+            document.querySelectorAll('#controlModal .mode-btn').forEach(btn => {
+                btn.classList.remove('active-vyp', 'active-man', 'active-auto');
+            });
+            
+            // Aktivace správného tlačítka (v modálu jsou jen 0, 1, 2)
+            const activeBtn = document.getElementById(`btnMode${mode}`);
+            if (activeBtn) {
+                const activeClasses = ['active-vyp', 'active-man', 'active-auto'];
+                activeBtn.classList.add(activeClasses[mode]);
+            }
+        }
+    }
 }
