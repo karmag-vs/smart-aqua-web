@@ -127,6 +127,29 @@ client.on('message', (topic, payload) => {
 			}
 			updateLedStatus(1, data.ledMode1, data.AVled1);  	// LED - STATUS
             updateLedStatus(2, data.ledMode2, data.AVled2);
+			if (data.statusPH !== undefined) {                  			// BARVY pro auto/rucne zav/rucne-vyp
+				const val = parseInt(data.statusPH);
+				lastStatus.phMode = val; // Uložíme pro potřeby modálu
+				
+				const badge = document.getElementById("statusPH");
+				if (badge) {
+					badge.classList.remove('status-vyp', 'status-man', 'status-auto'); // reset tříd
+					const classes = ['status-vyp', 'status-man', 'status-auto', 'status-auto'];
+					const texts = ['VYP', 'ZAP', 'A-VYP', 'A-ZAP'];
+					
+					badge.innerText = texts[val] || '--';
+					if (classes[val]) badge.classList.add(classes[val]);
+					
+					if (val === 3) {
+						badge.style.backgroundColor = "#2ecc71"; 	// Zelená - automat ON
+					} else if (val === 2) {
+						badge.style.backgroundColor = "#3498db"; 	// Modrá - automat OFF
+					} else {
+						badge.style.backgroundColor = "";        	// podle CSS 
+					}
+				}
+                //updatePhModalButtons(val);			// Aktualizace tlačítek v modálu (pokud je otevřený)
+            }
 			
 			if (data.datetime) {                                
                 serverTimeOffset = (data.datetime * 1000) - Date.now(); // Spočítáme rozdíl mezi časem v prohlížeči a v ESP32
