@@ -152,6 +152,19 @@ client.on('message', (topic, payload) => {
 				}
                 //updatePhModalButtons(val);			// Aktualizace tlačítek v modálu (pokud je otevřený)
             }
+
+			// ALARM	
+			const icon = document.getElementById("alarmIcon");  // Změna barvy ikony "ALARM" podle hodnoty alarmu
+			if (icon) {
+				// Převedeme na číslo, aby nás nepřekvapilo, že ESP pošle "0" jako text
+				if (Number(data.alarmNo) > 0) {
+					icon.style.color = "red"; 
+					icon.classList.add("fa-blink"); // přidání animace blikání
+				} else {
+					icon.style.color = "Grey";
+					icon.classList.remove("fa-blink");
+				}
+			}
 			
 			if (data.datetime) {                                
                 serverTimeOffset = (data.datetime * 1000) - Date.now(); // Spočítáme rozdíl mezi časem v prohlížeči a v ESP32
