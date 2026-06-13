@@ -55,7 +55,9 @@ client.on('message', (topic, payload) => {
             updateElement("alarmNo", data.alarmNo);
             updateElement("dKH", data.dKH, 1);
             updateElement("co2W", data.co2W);
-
+			if (data.datetime) {                                
+                serverTimeOffset = (data.datetime * 1000) - Date.now(); // Spočítáme rozdíl mezi časem v prohlížeči a v ESP32
+            }
         } catch (e) {
             console.error("Chyba při zpracování JSONu:", e);
         }
@@ -138,7 +140,7 @@ function createFooter() {
         <div class="footer-content">
             <p>
                 &copy; ${year} 
-                <img src="aqua.ico" class="footer-logo" alt="logo">
+                <img src="aqua.svg" class="footer-logo" alt="logo">
                 <strong>Smart Aqua CS</strong>&nbsp;&nbsp;Verze <span id="info-sw">---</span>
             <p>
             <p>
@@ -177,11 +179,8 @@ function loadSystemInfo() {
 window.addEventListener('load', () => {
     createNavbar(); // hlavička stránky + menu
     createFooter(); // patička
-    createModals(); // vyskakovací okna (grafy, nastavení senzorů)
     loadSystemInfo();
     setInterval(updateClock, 1000);
-    //refreshAllData();
-    //setInterval(refreshAllData, 5000);
 });
 // HODINY
 function updateClock() {
