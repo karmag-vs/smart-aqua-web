@@ -72,6 +72,60 @@ client.on('message', (topic, payload) => {
             updateElement("alarmNo", data.alarmNo);
             updateElement("dKH", data.dKH, 1);
             updateElement("co2W", data.co2W);
+			updateElement("feedStat", data.feedStat);
+			const flagFeeder = data.feedStat;
+			updateElement("fertStat", data.fertStat);
+			const flagFert = data.fertStat;
+			// Ikona krmítka (Feeder)
+			if (data.feedStat !== undefined) {
+				const feederIcon = document.getElementById("feederIcon");
+				if (feederIcon) {
+					// Nejdříve odebereme všechny stavové třídy
+					feederIcon.classList.remove("feeder-offline", "feeder-error", 
+												"feeder-active", "feeder-empty");
+					if (!(flagFeeder & (1 << 7))) {				// Bit 7: Povolení
+						feederIcon.classList.add("feeder-offline");
+						feederIcon.title = "Krmítko: Offline (odpojeno)";
+					} else {
+						if ((flagFeeder & (1 << 0)) !== 0) {	// Bit 0: krmitko online = 1
+							if (!(flagFeeder & (1 << 6))) {		// Bit 6: krmitko prazdne = 1
+								feederIcon.classList.add("feeder-active");
+								feederIcon.title = "Krmítko: Online";
+							} else {    
+								feederIcon.classList.add("feeder-empty");
+								feederIcon.title = "Krmítko: Prázdné";
+							}
+						} else {
+							feederIcon.classList.add("feeder-error");
+							feederIcon.title = "Krmítko: Online (POZOR: Žádná dávka není povolena!)";
+						}
+					}
+				}
+			}
+				
+            // Davkovani hnojiva (Fertilizer) - ikona
+			if (data.fertStat !== undefined) {
+				const fertIcon = document.getElementById("fertIcon");
+				if (fertIcon) {
+					fertIcon.classList.remove("feeder-offline", "feeder-error", 
+												"feeder-active", "feeder-empty");
+					if (!(flagFert & (1 << 7))) {				// Bit 7: 0 = offline (seda)		
+						fertIcon.classList.add("feeder-offline");
+						fertIcon.title = "Fertilizer: Offline";
+						//fertIcon.style.opacity = "1";
+					} else {
+						if (!(flagFert & (1 << 6))) {			// Bit 6: prazna lahev
+							fertIcon.classList.add("feeder-active");
+							fertIcon.title = "Fertilizer: Online";
+							//fertIcon.style.opacity = "0.4";
+						} else {    
+							fertIcon.classList.add("feeder-empty");
+							fertIcon.title = "Fertilizer: Prázdné";
+						}	
+					}
+				}
+			}
+			
 			if (data.datetime) {                                
                 serverTimeOffset = (data.datetime * 1000) - Date.now(); // Spočítáme rozdíl mezi časem v prohlížeči a v ESP32
             }
