@@ -34,9 +34,30 @@ client.on('message', (topic, payload) => {
             // Převedeme text na JSON objekt
             const myObj = JSON.parse(payload.toString());
             console.log("Data z ESP32 úspěšně přijata:", myObj);
-            
+
+            updateElement("tempCover", data.tempCover , 1);
+            updateElement("humCover", data.humCover , 0);
+            updateElement("AVled1", data.AVled1);
+            updateElement("SPled1", data.SPled1);
+            updateElement("AVled2", data.AVled2);
+            updateElement("SPled2", data.SPled2);
+            updateElement("tempWater", data.tempWater , 1);
+            updateElement("SPtempWater", data.SPtempWater , 1);
+            updateElement("phWater", data.phWater , 1);
+            updateElement("SPphWater", data.SPphWater , 1);
+            updateElement("levelWater", data.levelWater , 1);
+            updateElement("flowWater", data.flowWater , 1);
+            updateElement("AVchanges", data.AVchgs , 1);
+            //updateElement("TMchanges", data.TMchgs , 1);
+            let tmVal = Number(data.TMchgs);
+            let tmDecimals = (tmVal < 10.0) ? 1 : 0;
+            updateElement("TMchanges", data.TMchgs, tmDecimals);
+            updateElement("ntpTime", data.ntpTime);
+            updateElement("alarmNo", data.alarmNo);
+            updateElement("dKH", data.dKH, 1);
+            updateElement("co2W", data.co2W);
             // Pomocná funkce pro bezpečný zápis – pokud ID neexistuje, JavaScript nespadne
-            const writeValue = (id, value) => {
+            /*const writeValue = (id, value) => {
                 const element = document.getElementById(id);
                 if (element && value !== undefined) {
                     element.innerHTML = value;
@@ -72,10 +93,29 @@ client.on('message', (topic, payload) => {
                     alarmEl.style.backgroundColor = "green";
                     alarmEl.innerHTML = "OK";
                 }
-            }
+            }*/
 
         } catch (e) {
             console.error("Chyba při zpracování JSONu:", e);
         }
     }
 });
+
+function updateElement(id, value, decimals = 0, divider = 1) {
+    var el = document.getElementById(id);
+    if (el) {
+        let displayValue;
+        if (!isNaN(value) && value !== "" && value !== null) {
+            let num = Number(value) / divider;
+            displayValue = num.toFixed(decimals);
+        } else {
+            displayValue = value;
+        }
+        // OPRAVA: Rozlišení mezi běžným prvkem a vstupním polem
+        if (el.tagName === "INPUT") {
+            el.value = displayValue;
+        } else {
+            el.innerText = displayValue;
+        }
+    }
+}
