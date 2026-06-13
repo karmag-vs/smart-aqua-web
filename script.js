@@ -30,6 +30,22 @@ client.on('message', (topic, payload) => {
         try {
             // OPRAVA: Přejmenováno z myObj na data, aby seděl zbytek kódu
             const data = JSON.parse(payload.toString());
+
+			// --- KONTROLA: JDE O SYSTÉMOVÉ INFO? ---
+            if (data.type === "sysInfo") {
+                console.log("Přijato systémové info z ESP32:", data);
+                
+                // Uložíme do paměti prohlížeče
+                sessionStorage.setItem('info-sw', data.sw_ver);
+                sessionStorage.setItem('info-hw', data.hw_ver);
+                
+                // Vepíšeme do stránky
+                if (document.getElementById('info-sw')) document.getElementById('info-sw').innerText = data.sw_ver;
+                if (document.getElementById('info-hw')) document.getElementById('info-hw').innerText = data.hw_ver;
+                
+                return; // Ukončíme větev, abychom nepokračovali na běžná data akvária
+            }
+			
             console.log("Data z ESP32 úspěšně přijata:", data);
 
             // Nyní už proměnná 'data' existuje a vše poběží hladce
@@ -162,18 +178,12 @@ function loadSystemInfo() {
         if (document.getElementById('info-hw')) document.getElementById('info-hw').innerText = cachedHw;
         return;
     }
-    fetch('/getSystemInfo')
-        .then(response => response.json())
-        .then(data => {
-            sessionStorage.setItem('info-sw', data.sw_ver);
-            sessionStorage.setItem('info-hw', data.hw_ver);
-            const swEl = document.getElementById('info-sw');
-            const hwEl = document.getElementById('info-hw');
-            
-            if (swEl) swEl.innerText = data.sw_ver;
-            if (hwEl) hwEl.innerText = data.hw_ver;
-        })
-        .catch(err => console.error("Chyba při načítání info:", err));
+	// Pokud cache nemáme, požádáme ESP32 přes MQTT
+    if (client && client.connected) {
+        console.log("Žádám ESP32 o systémové informace přes MQTT...");
+        // Pošleme požadavek do stejného tématu jako "updateAll", ale s jiným textem
+        client.publish('smart_aqua_cs/data/pozadavek', 'getSystemInfo');
+    }
 }
 // VOLANI FUNKCI
 window.addEventListener('load', () => {
