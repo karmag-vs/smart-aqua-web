@@ -80,3 +80,79 @@ function updateElement(id, value, decimals = 0, divider = 1) {
         }
     }
 }
+
+function createNavbar() {
+    const placeholder = document.getElementById('nav-placeholder');
+    if (!placeholder) return; // Pokud prvek neexistuje, ukonči funkci a nepokračuj
+    const pageTitles = {
+        "index.html": "AQUA CS",      // vloží se jako titulek stránky
+        "LED1.html" : "LED 1",
+        "LED2.html" : "LED 2",
+        "TC.html"   : "TEPLOTA KRYT",
+        "HC.html"   : "VLHKOST KRYT",        
+        "TW.html"   : "TEPLOTA VODA",
+        "PHCO2.html": "PH VODA - CO2",
+        "WL.html"   : "HLADINA",
+        "QF.html"   : "PRŮTOK",
+        "note.html" : "DENÍK ÚDRŽBY",
+        "settings.html": "NASTAVENÍ",
+        "alarm.html": "PORUCHY",
+        "feeder.html" : "KRMENÍ",
+		"fertdoser.html" : "DÁVK.HNOJENÍ"
+    };
+    const currentFile = window.location.pathname.split("/").pop() || "index.html";
+    const dynamicTitle = pageTitles[currentFile] || "SMART AQUA";
+
+    const navHTML = `
+    <div class="top-header">
+        <div class="header-left-section">
+            <div class="header-brand">
+                <div class="header-status-icons">
+                    <i id="feederIcon" class="fas fa-fish"></i>
+                    <i id="fertIcon" class="fas fa-flask"></i> 
+                </div>
+                <div class="header-title">${dynamicTitle}</div>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center;">
+            <div class="header-datetime">
+                <div id="header-date" class="date-row">--.--.----</div>
+                <div id="header-time" class="time-row">--:--:--</div>
+            </div>
+            <div class="header-home">
+                <a href="index.html"><i class="fas fa-home"></i></a>
+            </div>
+        </div>    
+    </div>
+    <!--div id="mySidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3>MENU</h3>
+            <hr>
+        </div>
+        <a href="index.html"><i class="fas fa-home"></i> PŘEHLED</a>
+        <a href="LED1.html"><i class="fas fa-sun"></i> LED 1</a>
+        <a href="LED2.html"><i class="fas fa-sun"></i> LED 2</a>
+        <a href="settings.html"><i class="fas fa-cog"></i> NASTAVENÍ</a>
+        <a href="note.html"><i class="fas fa-clipboard-list"></i> POZNÁMKY</a>
+        <a href="feeder.html"><i class="fas fa-fish"></i> KRMENÍ</a>
+		<a href="fertdoser.html"><i class="fas fa-flask"></i> DÁVKOVAČ</a>
+        <a href="alarm.html"><i class="fas fa-exclamation-triangle"></i> PORUCHY</a>
+    </div>
+
+    <div id="overlay" class="overlay" onclick="toggleMenu()"></div-->
+    `;
+    
+    placeholder.innerHTML = navHTML;
+    // Automatické zvýraznění aktivní stránky
+    highlightActiveLink();
+}
+
+function highlightActiveLink() {
+    const currentPath = window.location.pathname.split("/").pop() || "index.html";
+    const links = document.querySelectorAll('.sidebar a');
+    links.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+}
