@@ -8,6 +8,7 @@ client.on('connect', () => {
         if (!err) {
             console.log('Úspěšně přihlášeno k odběru tématu smart_aqua_cs/data/vystup');
             // Teprve po úspěšném přihlášení si poprvé vyžádáme data
+			loadSystemInfo();
             client.publish('smart_aqua_cs/data/pozadavek', 'updateAll');
         } else {
             console.error('Chyba při přihlášení k odběru:', err);
@@ -189,7 +190,7 @@ function loadSystemInfo() {
 window.addEventListener('load', () => {
     createNavbar(); // hlavička stránky + menu
     createFooter(); // patička
-    loadSystemInfo();
+    //loadSystemInfo();
     setInterval(updateClock, 1000);
 });
 // HODINY
