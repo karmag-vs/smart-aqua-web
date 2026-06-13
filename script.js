@@ -28,10 +28,11 @@ client.on('message', (topic, payload) => {
     console.log("!!! DOŠLA MQTT ZPRÁVA !!! Téma:", topic);
     if (topic === 'smart_aqua_cs/data/vystup') {
         try {
-            // Převedeme text na JSON objekt
+            // OPRAVA: Přejmenováno z myObj na data, aby seděl zbytek kódu
             const data = JSON.parse(payload.toString());
-            console.log("Data z ESP32 úspěšně přijata:", myObj);
+            console.log("Data z ESP32 úspěšně přijata:", data);
 
+            // Nyní už proměnná 'data' existuje a vše poběží hladce
             updateElement("tempCover", data.tempCover , 1);
             updateElement("humCover", data.humCover , 0);
             updateElement("AVled1", data.AVled1);
@@ -45,10 +46,11 @@ client.on('message', (topic, payload) => {
             updateElement("levelWater", data.levelWater , 1);
             updateElement("flowWater", data.flowWater , 1);
             updateElement("AVchanges", data.AVchgs , 1);
-            //updateElement("TMchanges", data.TMchgs , 1);
+            
             let tmVal = Number(data.TMchgs);
             let tmDecimals = (tmVal < 10.0) ? 1 : 0;
             updateElement("TMchanges", data.TMchgs, tmDecimals);
+            
             updateElement("ntpTime", data.ntpTime);
             updateElement("alarmNo", data.alarmNo);
             updateElement("dKH", data.dKH, 1);
@@ -70,7 +72,7 @@ function updateElement(id, value, decimals = 0, divider = 1) {
         } else {
             displayValue = value;
         }
-        // OPRAVA: Rozlišení mezi běžným prvkem a vstupním polem
+        
         if (el.tagName === "INPUT") {
             el.value = displayValue;
         } else {
