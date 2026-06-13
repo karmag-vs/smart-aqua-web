@@ -32,7 +32,7 @@ client.on('message', (topic, payload) => {
     if (topic === 'smart_aqua_cs/data/vystup') {
         try {
             // Převedeme text na JSON objekt
-            const myObj = JSON.parse(payload.toString());
+            const data = JSON.parse(payload.toString());
             console.log("Data z ESP32 úspěšně přijata:", myObj);
 
             updateElement("tempCover", data.tempCover , 1);
@@ -56,44 +56,6 @@ client.on('message', (topic, payload) => {
             updateElement("alarmNo", data.alarmNo);
             updateElement("dKH", data.dKH, 1);
             updateElement("co2W", data.co2W);
-            // Pomocná funkce pro bezpečný zápis – pokud ID neexistuje, JavaScript nespadne
-            /*const writeValue = (id, value) => {
-                const element = document.getElementById(id);
-                if (element && value !== undefined) {
-                    element.innerHTML = value;
-                }
-            };
-            
-            writeValue("tempCover", myObj.tempCover);
-            writeValue("humCover", myObj.humCover);
-            writeValue("AVled1", myObj.AVled1);
-            writeValue("SPled1", myObj.SPled1);
-            writeValue("AVled2", myObj.AVled2);
-            writeValue("SPled2", myObj.SPled2);
-            writeValue("tempWater", myObj.tempWater);
-            writeValue("SPtempWater", myObj.SPtempWater);
-            writeValue("phWater", myObj.phWater);
-            writeValue("SPphWater", myObj.SPphWater);
-            writeValue("levelWater", myObj.levelWater);
-            writeValue("flowWater", myObj.flowWater);
-            writeValue("AVchanges", myObj.AVchgs);
-            writeValue("TMchanges", myObj.TMchgs);
-            //let tmVal = Number(data.TMchgs);
-            //let tmDecimals = (tmVal < 10.0) ? 1 : 0;
-            //updateElement("TMchanges", data.TMchgs, tmDecimals);
-            writeValue("ntpTime", myObj.ntpTime);
-            
-            // Zpracování alarmu (pokud existuje prvek alarmNo)
-            const alarmEl = document.getElementById("alarmNo");
-            if (alarmEl && myObj.alarmNo !== undefined) {
-                if (myObj.alarmNo > 0) {
-                    alarmEl.style.backgroundColor = "red";
-                    alarmEl.innerHTML = "ALARM";
-                } else {
-                    alarmEl.style.backgroundColor = "green";
-                    alarmEl.innerHTML = "OK";
-                }
-            }*/
 
         } catch (e) {
             console.error("Chyba při zpracování JSONu:", e);
