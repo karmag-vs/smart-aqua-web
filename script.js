@@ -35,34 +35,40 @@ client.on('message', (topic, payload) => {
             const myObj = JSON.parse(payload.toString());
             console.log("Data z ESP32 úspěšně přijata:", myObj);
             
-            // --- VAŠE PŮVODNÍ LOGIKA PRO VÝPIS DO STRÁNKY ---
-            // Tento blok kódu jsem vzal přesně z vaší původní funkce updateAll()
-            document.getElementById("tempCover").innerHTML   = myObj.tempCover;
-            document.getElementById("humCover").innerHTML    = myObj.humCover;
-            document.getElementById("AVled1").innerHTML      = myObj.AVled1;
-            document.getElementById("SPled1").innerHTML      = myObj.SPled1;
-            document.getElementById("AVled2").innerHTML      = myObj.AVled2;
-            document.getElementById("SPled2").innerHTML      = myObj.SPled2;
-            document.getElementById("tempWater").innerHTML   = myObj.tempWater;
-            document.getElementById("SPtempWater").innerHTML = myObj.SPtempWater;
-            document.getElementById("phWater").innerHTML     = myObj.phWater;
-            document.getElementById("SPphWater").innerHTML   = myObj.SPphWater;
-            document.getElementById("levelWater").innerHTML  = myObj.levelWater;
-            document.getElementById("flowWater").innerHTML   = myObj.flowWater;
-            document.getElementById("AVchgs").innerHTML      = myObj.AVchgs;
-            document.getElementById("TMchgs").innerHTML      = myObj.TMchgs;
+            // Pomocná funkce pro bezpečný zápis – pokud ID neexistuje, JavaScript nespadne
+            const writeValue = (id, value) => {
+                const element = document.getElementById(id);
+                if (element && value !== undefined) {
+                    element.innerHTML = value;
+                }
+            };
             
-            // Zpracování času
-            let cas = myObj.ntpTime;
-            document.getElementById("ntpTime").innerHTML = cas;
+            writeValue("tempCover", myObj.tempCover);
+            writeValue("humCover", myObj.humCover);
+            writeValue("AVled1", myObj.AVled1);
+            writeValue("SPled1", myObj.SPled1);
+            writeValue("AVled2", myObj.AVled2);
+            writeValue("SPled2", myObj.SPled2);
+            writeValue("tempWater", myObj.tempWater);
+            writeValue("SPtempWater", myObj.SPtempWater);
+            writeValue("phWater", myObj.phWater);
+            writeValue("SPphWater", myObj.SPphWater);
+            writeValue("levelWater", myObj.levelWater);
+            writeValue("flowWater", myObj.flowWater);
+            writeValue("AVchgs", myObj.AVchgs);
+            writeValue("TMchgs", myObj.TMchgs);
+            writeValue("ntpTime", myObj.ntpTime);
             
-            // Zpracování alarmů
-            if (myObj.alarmNo > 0) {
-                document.getElementById("alarmNo").style.backgroundColor = "red";
-                document.getElementById("alarmNo").innerHTML = "ALARM";
-            } else {
-                document.getElementById("alarmNo").style.backgroundColor = "green";
-                document.getElementById("alarmNo").innerHTML = "OK";
+            // Zpracování alarmu (pokud existuje prvek alarmNo)
+            const alarmEl = document.getElementById("alarmNo");
+            if (alarmEl && myObj.alarmNo !== undefined) {
+                if (myObj.alarmNo > 0) {
+                    alarmEl.style.backgroundColor = "red";
+                    alarmEl.innerHTML = "ALARM";
+                } else {
+                    alarmEl.style.backgroundColor = "green";
+                    alarmEl.innerHTML = "OK";
+                }
             }
 
         } catch (e) {
