@@ -13,9 +13,6 @@ client.on('connect', () => {
             console.error('Chyba při přihlášení k odběru:', err);
         }
     });
-    
-    // Hned po připojení si jednou vyžádáme data
-    client.publish('smart_aqua_cs/data/pozadavek', 'updateAll');
 });
 
 // --- 2. PRAVIDELNÁ ŽÁDOST O DATA (Náhrada za původní setInterval) ---
