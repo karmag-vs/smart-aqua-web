@@ -1,5 +1,7 @@
-// Globální proměnná pro synchronizaci času s ESP32 (výchozí offset je 0)
-let serverTimeOffset = 0;
+
+//
+let serverTimeOffset = 0;		// Globální proměnná pro synchronizaci času s ESP32 (výchozí offset je 0)
+
 // --- 1. PŘIPOJENÍ K MQTT BROKERU (přes zabezpečené WebSockets) ---
 const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
 
@@ -9,8 +11,7 @@ client.on('connect', () => {
     client.subscribe('smart_aqua_cs/data/vystup', (err) => {
         if (!err) {
             console.log('Úspěšně přihlášeno k odběru tématu smart_aqua_cs/data/vystup');
-            // Teprve po úspěšném přihlášení si poprvé vyžádáme data
-			loadSystemInfo();
+			loadSystemInfo();		// Teprve po úspěšném přihlášení > vyžádání dat
             client.publish('smart_aqua_cs/data/pozadavek', 'updateAll');
         } else {
             console.error('Chyba při přihlášení k odběru:', err);
@@ -18,13 +19,12 @@ client.on('connect', () => {
     });
 });
 
-// --- 2. PRAVIDELNÁ ŽÁDOST O DATA (Náhrada za původní setInterval) ---
-// Každých 5 sekund pošleme do ESP32 žádost o nová data
+// --- 2. PRAVIDELNÁ ŽÁDOST O DATA ---
 setInterval(() => {
     if (client.connected) {
         client.publish('smart_aqua_cs/data/pozadavek', 'updateAll');
     }
-}, 5000);
+}, 5000);		// Každých 5 sekund > do ESP32 žádost o nová data
 
 // --- 3. PŘÍJEM DAT Z ESP32 ---
 client.on('message', (topic, payload) => {
@@ -127,9 +127,9 @@ client.on('message', (topic, payload) => {
 					}
 				}
 			}
-			updateLedStatus(1, data.ledMode1, data.AVled1);  	// LED - STATUS
-            updateLedStatus(2, data.ledMode2, data.AVled2);
-			if (data.statusPH !== undefined) {                  			// BARVY pro auto/rucne zav/rucne-vyp
+			updateLedStatus(1, data.ledMode1, data.AVled1);  	// LED1 - status
+            updateLedStatus(2, data.ledMode2, data.AVled2);		// LED2 - status
+			if (data.statusPH !== undefined) {                  // PH/CO2 - status
 				const val = parseInt(data.statusPH);
 				//lastStatus.phMode = val; // Uložíme pro potřeby modálu
 				
