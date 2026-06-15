@@ -208,6 +208,11 @@ function updateElement(id, value, decimals = 0, divider = 1) {
 }
 
 // ZAHLAVI STRANKY
+function toggleMenu() {
+    document.getElementById("mySidebar").classList.toggle("open");
+    document.getElementById("overlay").classList.toggle("show");
+}
+
 function createNavbar() {
     const placeholder = document.getElementById('nav-placeholder');
     if (!placeholder) return; 
@@ -238,6 +243,9 @@ function createNavbar() {
     const navHTML = `
     <div class="top-header">
         <div class="header-left-section">
+            <div class="hamburger" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
             <div class="header-brand">
                 <div class="header-status-icons">
                     <i id="feederIcon" class="fas fa-fish"></i>
@@ -266,6 +274,22 @@ function createNavbar() {
             <button onclick="potvrditPrihlaseni()" style="padding: 10px 25px; width: 100%; background: #2ecc71; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 15px;">Vstoupit</button>
         </div>
     </div>
+    <div id="mySidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h3>MENU</h3>
+            <hr>
+        </div>
+        <a href="index.html"><i class="fas fa-home"></i> PŘEHLED</a>
+        <a href="LED1.html"><i class="fas fa-sun"></i> LED 1</a>
+        <a href="LED2.html"><i class="fas fa-sun"></i> LED 2</a>
+        <a href="settings.html"><i class="fas fa-cog"></i> NASTAVENÍ</a>
+        <a href="note.html"><i class="fas fa-clipboard-list"></i> POZNÁMKY</a>
+        <a href="feeder.html"><i class="fas fa-fish"></i> KRMENÍ</a>
+		<a href="fertdoser.html"><i class="fas fa-flask"></i> DÁVKOVAČ</a>
+        <a href="alarm.html"><i class="fas fa-exclamation-triangle"></i> PORUCHY</a>
+    </div>
+
+    <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
     `;
     placeholder.innerHTML = navHTML;
 }
