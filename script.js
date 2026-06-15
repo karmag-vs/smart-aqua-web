@@ -237,15 +237,6 @@ function createNavbar() {
             </div>
         </div>    
     </div>
-	<div id="login-overlay" style="display: ${displayStyle}; position: fixed; top:0; left:0; width:100vw; height:100vh; background: #1a1a1a; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; font-family: sans-serif; color: white;">
-        <div style="background: #2a2a2a; padding: 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
-            <h3 style="margin-top: 0; color: #2ecc71;"><i class="fas fa-lock"></i> Smart Aqua CS</h3>
-            <p style="color: #bbb; font-size: 14px;">Zadejte přístupové heslo:</p>
-            <input type="password" id="input-password" style="padding: 10px; width: 200px; border: none; border-radius: 4px; margin-bottom: 15px; text-align: center; font-size: 16px;">
-            <br>
-            <button onclick="potvrditPrihlaseni()" style="padding: 10px 25px; background: #2ecc71; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">Vstoupit</button>
-        </div>
-    </div>
     `;
     placeholder.innerHTML = navHTML;
 }
