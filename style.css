@@ -485,7 +485,7 @@ input[type="range"] { width: 100%; margin: 20px 0; accent-color: var(--accent); 
     line-height: 0.8;
 }
 .main-footer strong { 
-    color: var(--accent); 
+    color: white; /* var(--accent); */ 
 }
 
 .footer-logo {
