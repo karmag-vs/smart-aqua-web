@@ -218,7 +218,7 @@ function createNavbar() {
     if (!placeholder) return; 
     
     const pageTitles = {
-        "index.html": "AQUARIUM CS",      
+        "index.html": "AQUA CS",      
         "LED1.html" : "LED 1",
         "LED2.html" : "LED 2",
         "TC.html"   : "TEPLOTA KRYT",
