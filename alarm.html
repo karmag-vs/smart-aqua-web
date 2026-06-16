@@ -3,38 +3,24 @@
   <head>
     <title>ESP Smart Aqua CS - ALARM</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="icon" type="image/x-icon" href="aqua.ico">
+    <link rel="icon" type="image/svg+xml" href="aqua.svg">
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="script.js"></script>
   </head>
   <body>
-    <div id="nav-placeholder"></div>  <!-- navigacni menu -->
-        
-    <div class="content">
+    <div id="nav-placeholder"></div>  <div class="content">
         <div id="alarmTableContainer">
-            Načítám alarmy...
+            Načítám aktuální alarmy z ESP32...
         </div>
-        
-        <div class="mode-selector" style="margin-top: 20px;">
-            <button id="btnFirst" class="btn-add" onclick="loadAlarms(0)">
-                <i class="fas fa-angle-double-left"></i>
-            </button>
-            <button id="btnNewer" class="btn-add" style="background: #2eccbd" onclick="changeAlarmPage(-1)">
-                <i class="fas fa-chevron-left"></i> 
-            </button>
-            <button id="btnOlder" class="btn-add" style="background: #2eccbd" onclick="changeAlarmPage(+1)">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>  
     </div>    
     
     <div id="footer-placeholder"></div>  
     
   <script>
-    let alarmPageIndex = 0;
-    let totalAlarmFiles = 1;
-    // Definice textů a barev alarmů (mimo funkci, aby byla data po ruce)
+    // Definice textů a barev alarmů
     const alarmTexts = {
       "0": { text: "BEZ PORUCHY", color: "Green", icon: "fas fa-fish" },
       "1": { text: "VODA T: NÍZKÁ!", color: "Orange", icon: "fas fa-thermometer-empty" },
@@ -57,116 +43,71 @@
      "18": { text: "DÁVKOVÁNÍ: PRÁZDNÉ", color: "Brown", icon: "fas fa-vial" },
      "19": { text: "RTC ERROR!", color: "White", icon: "fa-clock" },
      "20": { text: "PROBLÉM S SD KARTOU!!!", color: "White", icon: "fas fa-sd-card" },
-	 "21": { text: "PROBLÉM S FS PAMĚTÍ!!!", color: "White", icon: "fas fa-microchip" },
-	 "22": { text: "RESTART", color: "White", icon: "fa-power-off" },
-	 "23": { text: "", color: "Green", icon: "fas fa-fish" },
-	 "24": { text: "", color: "Green", icon: "fas fa-fish" }
+     "21": { text: "PROBLÉM S FS PAMĚTÍ!!!", color: "White", icon: "fas fa-microchip" },
+     "22": { text: "RESTART", color: "White", icon: "fa-power-off" },
+     "23": { text: "", color: "Green", icon: "fas fa-fish" },
+     "24": { text: "", color: "Green", icon: "fas fa-fish" }
     };
-    
-    
 
-    function loadAlarms(page = 0) {
-        // Předpokládám endpoint podobný jako u notes
-        
-        fetch(`/getAlarmLogs?page=${page}`)
-        .then(response => response.json())
-        .then(json => {
-            // Uložíme počet souborů pro limit listování
-            if (page === 0 && json.id) totalAlarmFiles = json.id;
+    // Nová funkce pro sestavení tabulky, kterou zavolá script.js, jakmile dorazí MQTT zpráva
+    function vykresliAlarmy(json) {
+        const container = document.getElementById("alarmTableContainer");
+        if (!container) return;
 
-            const container = document.getElementById("alarmTableContainer");
-            let html = `<table>
-                <thead>
-                    <tr>
-                        <th style="width: 25%;">Čas</th>
-                        <th style="width: 15%;">Stav</th>
-                        <th>Popis poruchy</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+        let html = `<table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Čas</th>
+                    <th style="width: 15%;">Stav</th>
+                    <th>Popis poruchy</th>
+                </tr>
+            </thead>
+            <tbody>`;
 
-            if (json.d && json.d.length > 0) {
-                json.d.forEach(row => {
-                    // Formátování data dd.mm.yy hh:mm
-                    const d = new Date(row.t * 1000);
-                    const dateStr = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getFullYear()).slice(-2)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-                    // Určení ikony a barvy stavu (1=START, 2=STOP)
-                    const statusIcon = (row.s === 1) 
-                        ? '<i class="fas fa-caret-right" style="color: #ff4444;" title="Vznik"></i>' 
-                        : '<i class="fas fa-caret-left" style="color: #44ff44;" title="Konec"></i>';
-                    
-                    const info = alarmTexts[row.n.toString()] || { text: "Neznámý ID: " + row.n, color: "red", icon: "fa-exclamation" };
+        if (json.d && json.d.length > 0) {
+            json.d.forEach(row => {
+                // Formátování data dd.mm.yy hh:mm
+                const d = new Date(row.t * 1000);
+                const dateStr = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getFullYear()).slice(-2)} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                
+                // Určení ikony stavu (1=START, 2=STOP)
+                const statusIcon = (row.s === 1) 
+                    ? '<i class="fas fa-caret-right" style="color: #ff4444;" title="Vznik"></i>' 
+                    : '<i class="fas fa-caret-left" style="color: #44ff44;" title="Konec"></i>';
+                
+                const info = alarmTexts[row.n.toString()] || { text: "Neznámý ID: " + row.n, color: "red", icon: "fa-exclamation" };
 
-                    html += `<tr>
-                        <td style="font-size: 0.8rem; color: #aaa;">${dateStr}</td>
-                        <td style="text-align: center;">${statusIcon}</td>
-                        <td style="text-align: left; padding-left: 10px;">
-                            <span style="color:${info.color}; font-weight:600;">
-                                <i class="fas ${info.icon}"></i> ${info.text}
-                            </span>
-                        </td>
-                    </tr>`;
-                });
-            } else {
-                html += '<tr><td colspan="3">Žádné záznamy</td></tr>';
-            }
-
-            html += "</tbody></table>";
-            container.innerHTML = html;
-
-            // Aktualizace stavu tlačítek
-            alarmPageIndex = page;
-            const bf = document.getElementById('btnFirst');
-            const bo = document.getElementById('btnOlder');
-            const bn = document.getElementById('btnNewer');
-
-            if (!bf || !bn || !bo) return;
-
-            if (alarmPageIndex === 0) {
-                bo.disabled = (totalAlarmFiles <= 1); 
-            } else {
-                bo.disabled = (alarmPageIndex <= 1);
-            }
-            bn.disabled = (alarmPageIndex === 0);
-            bf.disabled = (alarmPageIndex === 0);
-            
-        })
-        .catch(err => {
-            console.error("Chyba alarmů:", err);
-            document.getElementById("alarmTableContainer").innerHTML = "Chyba při načítání dat.";
-        });
-    }
-
-    // Pomocná funkce pro tlačítka
-    function changeAlarmPage(diff) {
-        let newPage;
-
-        if (alarmPageIndex === 0) {
-            if (diff > 0) { 
-                // Kliknuto na "Starší" z aktuální stránky -> jdeme na nejvyšší číslo
-                newPage = totalAlarmFiles - 1; 
-            } else {
-                return; // Novější z aktuální neexistuje
-            }
+                html += `<tr>
+                    <td style="font-size: 0.8rem; color: #aaa;">${dateStr}</td>
+                    <td style="text-align: center;">${statusIcon}</td>
+                    <td style="text-align: left; padding-left: 10px;">
+                        <span style="color:${info.color}; font-weight:600;">
+                            <i class="fas ${info.icon}"></i> ${info.text}
+                        </span>
+                    </td>
+                </tr>`;
+            });
         } else {
-            if (diff > 0) {
-                // Kliknuto na "Starší" z historie -> snižujeme číslo (směr k 1)
-                newPage = alarmPageIndex - 1;
-            } else {
-                // Kliknuto na "Novější" z historie -> zvyšujeme číslo
-                newPage = alarmPageIndex + 1;
-                // Pokud překročíme nejvyšší číslo, jdeme na aktuální (0)
-                if (newPage >= totalAlarmFiles) newPage = 0;
-            }
+            html += '<tr><td colspan="3">Žádné záznamy o poruchách</td></tr>';
         }
-        
-        if (newPage >= 0) loadAlarms(newPage);
+
+        html += "</tbody></table>";
+        container.innerHTML = html;
     }
 
-    // Spuštění při načtení
-    window.addEventListener('load', () => loadAlarms(0));
-      </script>  
-  </body>
-  
+    // Vyžádání dat hned po spuštění (pokud už MQTT běží)
+    function riciOAlarmy() {
+        const heslo = sessionStorage.getItem('mqtt-heslo');
+        if (typeof client !== 'undefined' && client && client.connected && heslo) {
+            console.log("Posílám MQTT požadavek na alarmy...");
+            client.publish(`smart_aqua_cs/${heslo}/pozadavek`, 'getAlarmLogs');
+        }
+    }
 
+    // Zkusíme poslat požadavek při načtení (s malým zpožděním, aby stihl naběhnout klient ze script.js)
+    window.addEventListener('load', () => {
+        setTimeout(riciOAlarmy, 1000);
+    });
+  </script>  
+  </body>
 </html>
