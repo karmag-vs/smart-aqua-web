@@ -50,7 +50,7 @@
     };
 
     // Nová funkce pro sestavení tabulky, kterou zavolá script.js, jakmile dorazí MQTT zpráva
-    function vykresliAlarmy(json) {
+    function loadAlarms(json) {
         const container = document.getElementById("alarmTableContainer");
         if (!container) return;
 
