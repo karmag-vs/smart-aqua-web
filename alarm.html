@@ -96,7 +96,7 @@
     }
 
     // Vyžádání dat hned po spuštění (pokud už MQTT běží)
-    function riciOAlarmy() {
+    function getAlarms() {
         const heslo = sessionStorage.getItem('mqtt-heslo');
         if (typeof client !== 'undefined' && client && client.connected && heslo) {
             console.log("Posílám MQTT požadavek na alarmy...");
@@ -106,7 +106,7 @@
 
     // Zkusíme poslat požadavek při načtení (s malým zpožděním, aby stihl naběhnout klient ze script.js)
     window.addEventListener('load', () => {
-        setTimeout(riciOAlarmy, 1000);
+        setTimeout(getAlarms, 1000);
     });
   </script>  
   </body>
