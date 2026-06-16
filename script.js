@@ -71,7 +71,7 @@ function pripojitMQTT(heslo) {
 				if (data.type === "alarmLogs" || data.d !== undefined) {
 				    console.log("Přijat seznam alarmů z ESP32.");
 				    // Zkontrolujeme, jestli na aktuální stránce existuje funkce pro vykreslení
-				    if (typeof vykresliAlarmy === "function") {
+				    if (typeof getAlarms === "function") {
 				        loadAlarms(data);
 				    }
 				    return; // Ukončíme větev, abychom nepokračovali na běžná data akvária
