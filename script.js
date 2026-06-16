@@ -28,8 +28,11 @@ function pripojitMQTT(heslo) {
         client.subscribe(temaVystup, (err) => {
             if (!err) {
                 console.log(`Úspěšně přihlášeno k odběru tématu: ${temaVystup}`);
-                loadSystemInfo(); // Načtení systémových informací
-                client.publish(temaPozadavek, 'updateAll'); // První vyžádání dat akvária
+                loadSystemInfo(); 										// Načtení systémových informací
+                client.publish(temaPozadavek, 'updateAll'); 			// První vyžádání dat akvária
+				if (window.location.pathname.includes("alarm.html")) {	// Alarmy
+            		client.publish(temaPozadavek, 'getAlarmLogs');
+        		}
             } else {
                 console.error('Chyba při přihlášení k odběru:', err);
             }
