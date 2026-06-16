@@ -72,7 +72,7 @@ function pripojitMQTT(heslo) {
 				    console.log("Přijat seznam alarmů z ESP32.");
 				    // Zkontrolujeme, jestli na aktuální stránce existuje funkce pro vykreslení
 				    if (typeof vykresliAlarmy === "function") {
-				        vykresliAlarmy(data);
+				        loadAlarms(data);
 				    }
 				    return; // Ukončíme větev, abychom nepokračovali na běžná data akvária
 				}
