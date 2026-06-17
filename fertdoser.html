@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ESP Aqua CS - FERTILIZE DOSER</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="aqua.svg">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <!-- script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script-->
+    <script src="script.js"></script>
+  </head>
+  <body>
+    <div id="nav-placeholder"></div>  <!-- navigacni menu -->
+     
+	<div class="content">
+		<div class="cards">
+			<!-- HLAVNÍ KARTA SE VŠEMI PUMPAMI -->
+			<div class="card fert-card-wide">
+				<div class="pumps-container">
+					
+					<div class="pump-column" id="fCol1">
+						<strong class="pump-name">PUMP 1</strong>
+						<div class="tank-container">
+							<div id="fBar1" class="tank-fill" style="height: 50%;"></div>
+						</div>
+						<span id="fPerc1" class="tank-percent">50%</span>
+					</div>
+
+					<div class="pump-column" id="fCol2">
+						<strong class="pump-name">PUMP 2</strong>
+						<div class="tank-container">
+							<div id="fBar2" class="tank-fill" style="height: 30%;"></div>
+						</div>
+						<span id="fPerc2" class="tank-percent">30%</span>
+					</div>
+
+					<div class="pump-column" id="fCol3">
+						<strong class="pump-name">PUMP 3</strong>
+						<div class="tank-container">
+							<div id="fBar3" class="tank-fill" style="height: 80%;"></div>
+						</div>
+						<span id="fPerc3" class="tank-percent">80%</span>
+					</div>
+
+					<div class="pump-column" id="fCol4">
+						<strong class="pump-name">PUMP 4</strong>
+						<div class="tank-container">
+							<div id="fBar4" class="tank-fill" style="height: 10%;"></div>
+						</div>
+						<span id="fPerc4" class="tank-percent">10%</span>
+					</div>
+
+				</div>
+			</div>
+			
+			<!-- TLAČÍTKA POD KARTOU -->
+			<button class="btn-action grid-btn" onclick="openManualModal()">
+				<i class="fas fa-hand-pointer"></i> RUČNÍ OVLÁDÁNÍ
+			</button>
+		
+			<button class="btn-action grid-btn" onclick="openFertSettings()">
+				<i class="fas fa-calendar-alt"></i> PLÁN DÁVKOVÁNÍ
+			</button>
+		</div>
+	</div> 
+ 
+	<!-- Modální okno pro ruční ovládání -->
+	<div id="manualModal" class="modal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3 id="controlModalHeader">
+					<i class="fas fa-hand-pointer"></i>&nbsp;<span id="controlTitle">RUČNÍ OVLÁDÁNÍ</span>
+				</h3>
+				<div class="modal-controls">
+                    <button onclick="closeManualModal()" class="btn-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+			</div>
+			<div id="manualControlsContainer">
+				<!-- Sem JavaScript vygeneruje řádky pro každou pumpu -->
+			</div>
+		</div>
+	</div>
+
+    <div id="modals-placeholder"></div>
+    <div id="footer-placeholder"></div>  
+    
+    <script>
+		function openManualModal() {
+			const container = document.getElementById("manualControlsContainer");
+			if (!container) return;
+
+			let html = "";
+			for (let i = 0; i < 4; i++) {
+				const pumpNum = i + 1;
+				html += `
+					<div class="manual-row" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #333; gap: 5px;">
+						<strong style="color: #fff; min-width: 30px;">PUMPA ${pumpNum}</strong>
+						<button class="btn-add" style="background: #2eccbd; flex: none; width: 100px; padding: 10px 5px; font-size: 0.75rem;" onclick="manualFertDose(${i})">
+							<i class="fas fa-play"></i> DÁVKA
+						</button>
+						<button class="btn-add" style="background: #555; flex: none; width: 100px; padding: 10px 5px; font-size: 0.75rem;" onclick="resetFertLevel(${i})">
+							<i class="fas fa-sync-alt"></i> RESET
+						</button>
+					</div>
+				`;
+			}
+			
+			container.innerHTML = html;
+			document.getElementById("manualModal").style.display = "block";
+		}
+
+		function closeManualModal() {
+			document.getElementById("manualModal").style.display = "none";
+		}
+
+		// Pomocná funkce pro zavření kliknutím mimo okno (stejně jako v note.html)
+		/*window.onclick = function(event) {
+			const modal = document.getElementById("manualModal");
+			if (event.target == modal) closeManualModal();[cite: 2]
+		}*/
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = "none";
+            }
+        }
+    </script> 
+  </body>
+</html>
