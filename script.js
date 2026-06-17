@@ -74,14 +74,13 @@ function pripojitMQTT(heslo) {
 				if (data.type === "alarmLogs" || data.d !== undefined) {
 				    console.log("Přijat seznam alarmů z ESP32.");
 				    // Zkontrolujeme, jestli na aktuální stránce existuje funkce pro vykreslení
-				    if (typeof getAlarms === "function") {
-				        loadAlarms(data);
-				    }
+				    if (typeof getAlarms === "function") loadAlarms(data);
 				    return; // Ukončíme větev, abychom nepokračovali na běžná data akvária
 				}
 				// C. Zpracování STAVU HNOJIV
 	            if (data.type === "fertStatus" || data.maxV !== undefined) {
-	                if (typeof vykresliHnojiva === "function") loadFertilizer(data);
+					console.log("Přijata data fertilizeru z ESP32.");
+	                if (typeof loadFertilizer === "function") loadFertilizer(data);
 	                return;
 	            }
                 console.log("Data z ESP32 úspěšně přijata:", data);
