@@ -92,19 +92,25 @@ function pripojitMQTT(heslo) {
                 updateElement("levelWater", data.levelWater, 1);
                 updateElement("flowWater", data.flowWater, 1);
                 updateElement("AVchanges", data.AVchgs, 1);
-                
                 let tmVal = Number(data.TMchgs);
                 let tmDecimals = (tmVal < 10.0) ? 1 : 0;
                 updateElement("TMchanges", data.TMchgs, tmDecimals);
-                
                 updateElement("ntpTime", data.ntpTime);
                 updateElement("alarmNo", data.alarmNo);
                 updateElement("dKH", data.dKH, 1);
                 updateElement("co2W", data.co2W);
-                updateElement("feedStat", data.feedStat);
-                
+				
+                updateElement("feedDose1", data.feedD1);		// davka c.1 hh:mm
+				updateElement("feedDose2", data.feedD2);		// davka c.2 hh:mm
+				updateElement("totalDoses", data.totD);         // celkem davek
+				updateElement("currDose", data.currD);          // aktual. davka krmitka
+				updateElement("currSubDose", data.currSD);		// aktul. subdavka
+				updateElement("totalSubDoses", data.totSD);		// celkem subdavek
+				
+				updateElement("feedStat", data.feedStat);
                 const flagFeeder = data.feedStat;
-                updateElement("fertStat", data.fertStat);
+                
+				updateElement("fertStat", data.fertStat);
                 const flagFert = data.fertStat;
 
                 // Ikona krmítka (Feeder)
