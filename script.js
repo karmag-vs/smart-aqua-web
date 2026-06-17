@@ -76,6 +76,11 @@ function pripojitMQTT(heslo) {
 				    }
 				    return; // Ukončíme větev, abychom nepokračovali na běžná data akvária
 				}
+				// C. Zpracování STAVU HNOJIV
+	            if (data.type === "fertStatus" || data.maxV !== undefined) {
+	                if (typeof vykresliHnojiva === "function") loadFertilizer(data);
+	                return;
+	            }
                 console.log("Data z ESP32 úspěšně přijata:", data);
 
                 // Zápis hodnot do stránky
