@@ -440,7 +440,7 @@ window.addEventListener('load', () => {
     createNavbar(); 
     createFooter(); 
     setInterval(updateClock, 1000);
-
+	loadInitialTanks();
     // Pokud už uživatel heslo během této relace zadal, rovnou ho připojíme
     const cachedHeslo = sessionStorage.getItem('mqtt-heslo');
     if (cachedHeslo) {
