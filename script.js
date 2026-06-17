@@ -33,6 +33,9 @@ function pripojitMQTT(heslo) {
 				if (window.location.pathname.includes("alarm.html")) {	// Alarmy
             		client.publish(temaPozadavek, 'getAlarmLogs');
         		}
+				if (window.location.pathname.includes("fertdoser.html")) { 
+                loadInitialTanks();
+            	}
             } else {
                 console.error('Chyba při přihlášení k odběru:', err);
             }
@@ -444,3 +447,74 @@ window.addEventListener('load', () => {
         pripojitMQTT(cachedHeslo);
     }
 });
+
+
+function loadInitialTanks() {
+    if (!document.getElementById("fBar1")) return; // Pokud nejsme na stránce s dávkovačem, konec
+
+    const heslo = sessionStorage.getItem('mqtt-heslo');
+    
+    // Čistě MQTT komunikace pro GitHub
+    if (typeof client !== 'undefined' && client && client.connected && heslo) {
+        console.log("Posílám MQTT požadavek na stav hnojiv...");
+        client.publish(`smart_aqua_cs/${heslo}/pozadavek`, 'getFertStatus');
+    } else {
+        console.warn("Nelze načíst stav hnojiv. MQTT klient není připojen nebo chybí heslo.");
+    }
+}
+
+function loadFertilizer(data) {
+    if (!document.getElementById("fBar1")) return;
+    
+    const maxVolume = data.maxV || 450;
+    const instFlags = data.inst || 0;
+    const pumpColors = ["#3498db", "#f1c40f", "#178f17", "#d3d3d3"];            
+    
+    for (let i = 0; i < 4; i++) {
+        const pumpIdx = i + 1;
+        const rawValue = data["v" + pumpIdx];
+        const currentML = parseFloat(rawValue) || 0;    
+        const currentColor = pumpColors[i];
+        
+        // --- LOGIKA PRO ZEŠEDNUTÍ (BITOVÁ) ---
+        const column = document.getElementById("fCol" + pumpIdx);
+        if (column) {
+            if ((instFlags & (1 << i)) !== 0) {
+                column.classList.remove("pump-disabled");
+            } else {
+                column.classList.add("pump-disabled");
+            }
+        }
+        
+        // --- LOGIKA PRO HLADINY ---
+        let percent = (maxVolume > 0) ? (currentML / maxVolume) * 100 : 0;
+        percent = Math.min(100, Math.max(0, percent));
+        
+        // Aktualizace textu
+        const percText = document.getElementById("fPerc" + pumpIdx);
+        if (percText) {
+            percText.innerText = Math.round(percent) + "% (" + Math.round(currentML) + " ml)";
+            percText.style.color = (i === 3) ? "#f3f3f3" : currentColor;
+            percText.style.fontWeight = "bold";
+        }
+        
+        // Aktualizace grafické hladiny
+        const bar = document.getElementById("fBar" + pumpIdx);
+        if (bar) {
+            bar.style.height = Math.round(percent) + "%";
+            
+            if (percent < 10) {
+                bar.style.backgroundColor = "#ff3333"; 
+            } else {
+                bar.style.backgroundColor = "grey";
+            }
+
+            if (bar.parentElement) {
+                bar.parentElement.style.border = "2px solid #888";
+                bar.parentElement.style.borderRadius = "6px";
+                bar.parentElement.style.transition = "border-color 0.3s ease";
+            }
+        }
+    }
+    console.log("Stav hnojiv úspěšně vykreslen.");
+}
