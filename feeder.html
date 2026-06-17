@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ESP Aqua CS - FEEDER</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="aqua.svg">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="script.js"></script>
+  </head>
+  <body>
+    <div id="nav-placeholder"></div>  <div class="content">
+        <div class="cards">
+            
+            <div class="card led-card-inner">
+                <div class="card-row icon-row">
+                    <i id="bell1" class="fas fa-bell" style="color:Grey;"></i>&nbsp;&nbsp;
+                    <span class="label-text">Č. 1 </span>&nbsp;
+                    <span class="reading" id="feedDose1">--:--</span>
+                </div>
+
+                <div class="card-row icon-row">
+                    <i id="bell2" class="fas fa-bell" style="color:Grey;"></i>&nbsp;&nbsp;
+                    <span class="label-text">Č. 2 </span>&nbsp;
+                    <span class="reading" id="feedDose2">--:--</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div><span class="label-text">DÁVKY</span>
+                    <span style="color: Gray;" id="totalDoses">--</span> / 
+                    <span id="currDose">--</span>
+                </div>
+                <div><span class="label-text">DÁVKA</span>
+                    <span style="color: Gray;" id="totalSubDoses">--</span> / 
+                    <span id="currSubDose">--</span>
+                </div>              
+            </div>
+            
+            <button class="btn-action grid-btn" onclick="triggerAction('feedStart')">
+                <i class="fas fa-play"></i> DÁVKA (START)
+            </button>
+
+            <button class="btn-action grid-btn" onclick="triggerAction('feedReset')">
+                <i class="fas fa-undo"></i> RESET
+            </button>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>  
+    
+    <script>
+        // Funkce pro odesílání ovládacích příkazů přes MQTT
+        function triggerAction(command) {
+            const heslo = sessionStorage.getItem('mqtt-heslo');
+            
+            // Ověříme, zda je MQTT klient připojen
+            if (typeof client !== 'undefined' && client && client.connected && heslo) {
+                const temaPozadavek = `smart_aqua_cs/${heslo}/pozadavek`;
+                
+                console.log(`Posílám akční příkaz [${command}] do tématu: ${temaPozadavek}`);
+                
+                // Publikujeme příkaz (např. "feedStart" nebo "feedReset")
+                client.publish(temaPozadavek, command);
+            } else {
+                alert("Nelze provést akci. MQTT klient není připojen!");
+            }
+        }
+    </script> 
+  </body>
+</html>
