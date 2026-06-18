@@ -1,7 +1,16 @@
 // Globální proměnné
 let serverTimeOffset = 0; // Globální proměnná pro synchronizaci času s ESP32
 let client = null;        // Klienta vytvoříme až po ověření hesla
-
+let currentChartType = null;
+let currentChartColor = "#2ecc71";
+const sensorConfig = {
+    0: { name: "TEPL.KRYT",  unit: "°C",    color: "#6fa8dc",  id: "TC"},
+    1: { name: "VLHKOST",  unit: "%",     color: "#bcbcbc",  id: "HC"},
+    2: { name: "TEPL.VODA",  unit: "°C",    color: "#3498db",  id: "TW"},
+    3: { name: "PH VODA", unit: "pH",    color: "#2ecc71",  id: "PH"},
+    4: { name: "PRŮTOK",   unit: "l/min", color: "#1dd1a1",  id: "QF"},
+    5: { name: "HLADINA",  unit: "cm",    color: "#54a0ff",  id: "WL"}
+};
 // --- 1. PŘIHLAŠOVACÍ LOGIKA ---
 function potvrditPrihlaseni() {
     const heslo = document.getElementById('input-password').value.trim();
@@ -543,10 +552,6 @@ function loadFertilizer(data) {
     }
     console.log("Stav hnojiv úspěšně vykreslen.");
 }
-
-// Globální proměnné (ponechat)
-let currentChartType = null;
-let currentChartColor = "#2ecc71";
 
 //==============================================================================
 // 1. Otevření modálu - GRAF (MQTT verze)
