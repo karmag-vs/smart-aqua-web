@@ -83,6 +83,32 @@ function pripojitMQTT(heslo) {
 	                if (typeof loadFertilizer === "function") loadFertilizer(data);
 	                return;
 	            }
+				// --- ZPRACOVÁNÍ DAT PRO GRAF ---
+				if (data.type === "chart" || (data.data !== undefined && data.numValues !== undefined)) {
+					console.log("Přijata data grafu přes MQTT.");
+					vykresliGoogleChart(data);
+					
+					// Zároveň z dat grafu aktualizujeme popisek časového tlačítka (graphX)
+					const labels = [" 1H", " 24H", " 7D", " 30D"];
+					const labelEl = document.getElementById('timeRangeLabel');
+					if (labelEl && data.GraphX !== undefined) {
+						labelEl.innerText = labels[parseInt(data.GraphX)] || " --";
+					}
+					return;
+				}
+
+				// --- POKUD ESP32 POŠLE JEN AKTUALIZACI INTERVALU (např. {"graphX": 1}) ---
+				if (data.graphX !== undefined && data.type === undefined) {
+					const labels = [" 1H", " 24H", " 7D", " 30D"];
+					const labelEl = document.getElementById('timeRangeLabel');
+					if (labelEl) {
+						labelEl.innerText = labels[parseInt(data.graphX)] || " --";
+					}
+					// Po změně intervalu si rovnou vyžádáme nový graf
+					refreshChart();
+					return;
+				}
+				
                 console.log("Data z ESP32 úspěšně přijata:", data);
 
                 // Zápis hodnot do stránky
@@ -516,6 +542,191 @@ function loadFertilizer(data) {
         }
     }
     console.log("Stav hnojiv úspěšně vykreslen.");
+}
+
+// Globální proměnné (ponechat)
+let currentChartType = null;
+let currentChartColor = "#2ecc71";
+
+//==============================================================================
+// 1. Otevření modálu - GRAF (MQTT verze)
+//==============================================================================
+function openChart(id) {
+    const config = sensorConfig[id];
+    if (!config) {
+        console.error("Konfigurace pro senzor ID " + id + " nebyla nalezena.");
+        return;
+    }
+    currentChartType = config.id;                   // Uloží se typ (např. "tempVoda", "phVoda")
+    currentChartColor = config.color || "#2ecc71";  
+    
+    const titleEl = document.getElementById('chartModalTitle');
+    if (titleEl) {
+        titleEl.innerText = `${config.name} [${config.unit}]`;  
+    }
+    document.getElementById('chartModal').style.display = 'block';
+    
+    // Vyžádáme si čerstvá data grafu přes MQTT
+    refreshChart();
+}
+
+//==============================================================================
+// 2. Změna intervalu - Kliknutí na tlačítko času (MQTT verze)
+//==============================================================================
+function changeChartInterval() {
+    const heslo = sessionStorage.getItem('mqtt-heslo');
+    
+    if (typeof client !== 'undefined' && client && client.connected && heslo) {
+        console.log("Posílám MQTT požadavek na změnu časového intervalu grafu...");
+        client.publish(`smart_aqua_cs/${heslo}/pozadavek`, 'changeTimeChart');
+        // Poznámka: ESP32 interval přepne a v reakci na to pošle zpět buď 
+        // aktualizovaný stav intervalu, nebo rovnou nová data grafu.
+    } else {
+        console.error("Nelze změnit interval. MQTT klient odpojen.");
+    }
+}
+
+//==============================================================================
+// 3. Požadavek na data grafu přes MQTT
+//==============================================================================
+function refreshChart() {
+    if (!currentChartType) return; 
+    if (typeof google === 'undefined' || !google.visualization) return;
+
+    const elementId = "temp_chart_div";
+    const chartDiv = document.getElementById(elementId);
+    if (!chartDiv) return; 
+
+    const heslo = sessionStorage.getItem('mqtt-heslo');
+    
+    if (typeof client !== 'undefined' && client && client.connected && heslo) {
+        console.log(`Posílám MQTT požadavek na data grafu pro: ${currentChartType}`);
+        // Posíláme požadavek s parametrem typu senzoru, např: "getChart:tempVoda"
+        client.publish(`smart_aqua_cs/${heslo}/pozadavek`, `getChart:${currentChartType}`);
+    } else {
+        chartDiv.innerHTML = "MQTT odpojeno. Nelze načíst graf.";
+    }
+}
+
+//==============================================================================
+// 4. Samotné zpracování a vykreslení JSON dat (Společná kreslící logika)
+//==============================================================================
+function vykresliGoogleChart(json) {
+    const elementId = "temp_chart_div";
+    const chartDiv = document.getElementById(elementId);
+    if (!chartDiv || typeof google === 'undefined' || !google.visualization) return;
+
+    try {
+        const dataTable = new google.visualization.DataTable();
+        
+        // 1. Sloupec: Čas (X)
+        dataTable.addColumn('number', 'Vzorek');
+        
+        // 2. Sloupec: Aktuální hodnota (Y1)
+        dataTable.addColumn('number', json.type);
+
+        // Dynamické sloupce podle nastavení limitů z ESP32
+        if (json.enSET) dataTable.addColumn('number', 'SP');
+        if (json.enMIN) dataTable.addColumn('number', 'LO LIM');
+        if (json.enMAX) dataTable.addColumn('number', 'HI LIM');
+
+        // Příprava dat pro Google Charts
+        const rows = [];
+        for (let i = 0; i < json.numValues; i++) {
+            let val = json.data[i];
+            let row = [i, val]; 
+
+            if (json.enSET) row.push(json.setVal);
+            if (json.enMIN) row.push(json.minVal);
+            if (json.enMAX) row.push(json.maxVal);
+            
+            rows.push(row);
+        }
+
+        dataTable.addRows(rows);
+
+        // Nastavení titulků osy X podle GraphX
+        let xAxisTitle = "Čas";
+        switch(parseInt(json.GraphX)) {
+            case 0: xAxisTitle = "Poslední hodina (minuty)"; break;
+            case 1: xAxisTitle = "Posledních 24 hodin"; break;
+            case 2: xAxisTitle = "Posledních 7 dní"; break;
+            case 3: xAxisTitle = "Posledních 30 dní"; break;
+        }
+        
+        let hAxisOptions = { 
+            title: xAxisTitle,
+            gridlines: { color: '#333' },
+            textStyle: { color: '#888' } 
+        };
+        
+        // Osa X - dělení podle časového intervalu
+        const gx = parseInt(json.GraphX);
+        if (gx === 3) { 
+            hAxisOptions.ticks = [{v: 0, f: '0'}, {v: 30, f: '5'}, {v: 60, f: '10'}, {v: 90, f: '15'}, {v: 120, f: '20'}, {v: 150, f: '25'}, {v: 180, f: '30'}];
+        } else if (gx === 2) { 
+            hAxisOptions.ticks = [{v: 0, f: '0'}, {v: 24, f: '1'}, {v: 48, f: '2'}, {v: 72, f: '3'}, {v: 96, f: '4'}, {v: 120, f: '5'}, {v: 144, f: '6'}, {v: 168, f: '7'}];
+        } else if (gx === 1) { 
+            hAxisOptions.ticks = [{v: 0, f: '0'}, {v: 24, f: '4'}, {v: 48, f: '8'}, {v: 72, f: '12'}, {v: 96, f: '16'}, {v: 120, f: '20'}, {v: 144, f: '24'}];
+        }
+
+        const options = {
+            title: `${json.type} Poslední vzorek ${json.lastH}:${json.lastM < 10 ? '0'+json.lastM : json.lastM}`,
+            titleTextStyle: { color: '#eeeeee', bold: true },
+            backgroundColor: 'transparent',
+            chartArea: { width: '85%', height: '70%' },
+            curveType: 'function',
+            colors: [currentChartColor, '#f1c40f', '#e74c3c', '#e74c3c'],
+            hAxis: hAxisOptions,
+            vAxis: { 
+                gridlines: { color: '#333' },
+                textStyle: { color: '#888' } 
+            },
+            legend: { position: 'bottom', textStyle: { color: '#eee' } },
+            series: {
+                1: { lineDashStyle: [4, 4], lineWidth: 2 },
+                2: { lineDashStyle: [2, 2], lineWidth: 2 },
+                3: { lineDashStyle: [2, 2], lineWidth: 2 }
+            }
+        };
+
+        const chart = new google.visualization.LineChart(chartDiv);
+        chart.draw(dataTable, options);
+        
+    } catch (err) {
+        console.error("Chyba při vykreslování Google Chartu:", err);
+        chartDiv.innerHTML = "Chyba při zpracování dat grafu.";
+    }
+}
+
+//==============================================================================
+// Generování modálního okna pouze pro GRAF (MQTT verze)
+//==============================================================================
+function createModals() {
+    const placeholder = document.getElementById('modals-placeholder');
+    if (!placeholder) return; // Pokud prvek na stránce není, končíme
+
+    const modalsHTML = `
+    <div id="chartModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="chartModalHeader">
+                    <i class="fas fa-chart-area"></i>&nbsp;<span id="chartModalTitle">Historie</span>
+                </h3>
+                <div class="modal-controls">
+                    <button onclick="changeChartInterval()" class="btn-modal">
+                        <i class="fas fa-clock"></i> <span id="timeRangeLabel"> 1H </span>
+                    </button>
+                    <button onclick="closeModal('chartModal')" class="btn-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="temp_chart_div" style="width: 100%; height: 350px;"></div>
+        </div>
+    </div>`;
+
+    placeholder.innerHTML = modalsHTML;
 }
 
 // Pomocná funkce pro zavírání oken (pokud ji ještě nemáš samostatně)
