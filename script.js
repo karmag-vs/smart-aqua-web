@@ -517,3 +517,11 @@ function loadFertilizer(data) {
     }
     console.log("Stav hnojiv úspěšně vykreslen.");
 }
+
+// Pomocná funkce pro zavírání oken (pokud ji ještě nemáš samostatně)
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
