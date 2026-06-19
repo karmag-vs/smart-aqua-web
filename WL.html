@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>ESP Aqua CS - QF</title>
+    <title>ESP Aqua CS - WATER LEVEL</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/svg+xml" href="aqua.svg">
     <meta charset="UTF-8">
@@ -17,27 +17,20 @@
         <div class="cards">
         
             <div class="card">
-                <p><i class="fas fa-spinner" style="color:DodgerBlue;"></i>
-                    PRŮTOK
+                <p><i class="fas fa-arrow-alt-circle-down" style="color:DodgerBlue;"></i>
+                    HLADINA
                     <span class="reading">
-                    <span id="flowWater">--</span> L/MIN</span>
+                    <span id="levelWater">--</span> CM</span>
                 </p>
             </div>
 
-            <div class="card">
-                <p><i class="fas fa-exchange-alt" style="color:DodgerBlue;"></i>
-                    VÝMĚNY
-                    <span class="reading">
-                    <span id="AVchanges">--</span> h<sup>-1</sup> / 
-                    <span id="TMchanges">--</span> x</span>
-                </p>
-            </div>
+            <div class="card"></div>
             
-            <button class="btn-action grid-btn" onclick="openChart(4)">
+            <button class="btn-action grid-btn" onclick="openChart(5)">
                 <i class="fas fa-chart-line"></i> HISTORIE (GRAF)
             </button>
             
-            <!--button class="btn-action grid-btn" onclick="openSensorSettings(4, 'flowWater', ['inst','enAlm','req','act','cal','hys','min','max'])">
+            <!--button class="btn-action grid-btn" onclick="openSensorSettings(5, 'levelWater', ['inst','enAlm','req','act','cal','hys','min','max'])">
                 <i class="fas fa-cog"></i> NASTAVENÍ 
             </button-->
         </div>
