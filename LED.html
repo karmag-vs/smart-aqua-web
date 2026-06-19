@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <title>ESP Aqua CS - LED</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="aqua.svg">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+	<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="script.js"></script>
+  </head>
+  <body>
+    <div id="nav-placeholder"></div>  <!-- navigacni menu -->    
+    
+    <div class="content">
+      <div class="cards">
+      
+        <div class="card led-card-inner">
+          <div class="card-row icon-row">
+            <i class="fas fa-sun" style="color:Gold;"></i>
+          </div>
+
+          <div class="card-row label-row">
+            <span class="label-text">LED 1</span>
+            <span id="statusLed1" class="status-badge">--</span>
+          </div>
+
+          <div class="reading">
+            <span style="color: Gray;" id="SPled1">--</span> / 
+            <span id="AVled1">--</span> &percnt;
+          </div>
+        </div>
+
+        <div class="card led-card-inner">
+          <div class="card-row icon-row">
+            <i class="fas fa-sun" style="color:Gold;"></i>
+          </div>
+
+          <div class="card-row label-row">
+            <span class="label-text">LED 2</span>
+            <span id="statusLed2" class="status-badge">--</span>
+          </div>
+
+          <div class="reading">
+            <span style="color: Gray;" id="SPled2">--</span> / 
+            <span id="AVled2">--</span> &percnt;
+          </div>
+        </div>
+
+        
+        <!--button class="btn-action grid-btn" onclick="openControlModal(1, 'LED 1')">
+            <i class="fas fa-sliders-h"></i> OVLÁDÁNÍ
+        </button-->
+		
+        <!--button class="btn-action grid-btn" onclick="openControlModal(2, 'LED 2')">
+            <i class="fas fa-sliders-h"></i> OVLÁDÁNÍ
+        </button-->
+		
+        <!--button class="btn-action grid-btn" onclick="openSchedulerModal(1)"> 
+            <i class="fas fa-calendar-alt"></i> PLÁNOVAČ
+        </button-->
+      </div>
+    </div>
+
+    <!--div id="controlModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="controlModalHeader">
+                    <i class="fas fa-sliders-h"></i>&nbsp;<span id="controlTitle">LED</span>
+                </h3>
+                <div class="modal-controls">
+                    <button onclick="closeModal('controlModal')" class="btn-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-body" style="text-align: center; padding: 20px 10px;">
+                <div style="font-size: 3rem; font-weight: bold; margin-bottom: 10px; color: var(--accent);">
+                    <span id="valDisplay">0</span><span style="font-size: 1.5rem; color: #888;"> %</span>
+                </div>
+                
+                <div class="slider-container">
+                    <input type="range" id="controlSlider" min="0" max="100" value="0" 
+                           class="main-slider"
+                           oninput="handleSliderInput(this.value)"
+                           onchange="handleSliderChange(this.value)"
+                           onmousedown="isUserDragging=true" 
+                           ontouchstart="isUserDragging=true"
+                           onmouseup="isUserDragging=false" 
+                           ontouchend="isUserDragging=false">
+                </div>
+            </div>
+
+            <div class="mode-selector">
+                <button id="btnMode0" class="mode-btn" onclick="setMode(0)">VYP</button>
+                <button id="btnMode1" class="mode-btn" onclick="setMode(1)">RUČNĚ</button>
+                <button id="btnMode2" class="mode-btn" onclick="setMode(2)">AUTO</button>
+            </div>
+        </div>
+    </div-->
+    
+    <div id="modals-placeholder"></div>
+    <div id="footer-placeholder"></div>
+      
+    <script>
+        // Zavření kliknutím mimo okno
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = "none";
+            }
+        }
+    </script>    
+  </body>
+</html>

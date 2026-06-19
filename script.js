@@ -278,15 +278,14 @@ function createNavbar() {
     
     const pageTitles = {
         "index.html": "AQUA CS",      
-        "LED1.html" : "LED 1",
-        "LED2.html" : "LED 2",
+        "LED.html" : "LED",
         "THC.html"   : "T+H KRYT",        
         "TW.html"   : "TEPLOTA VODA",
         "PHCO2.html": "PH VODA - CO2",
         "WL.html"   : "HLADINA",
         "QF.html"   : "PRŮTOK",
-        "note.html" : "DENÍK ÚDRŽBY",
-        "settings.html": "NASTAVENÍ",
+        //"note.html" : "DENÍK ÚDRŽBY",
+        //"settings.html": "NASTAVENÍ",
         "alarm.html": "PORUCHY",
         "feeder.html" : "KRMENÍ",
         "fertdoser.html" : "DÁVK.HNOJENÍ"
@@ -338,10 +337,9 @@ function createNavbar() {
             <hr>
         </div>
         <a href="index.html"><i class="fas fa-home"></i> PŘEHLED</a>
-        <a href="LED1.html"><i class="fas fa-sun"></i> LED 1</a>
-        <a href="LED2.html"><i class="fas fa-sun"></i> LED 2</a>
-        <a href="settings.html"><i class="fas fa-cog"></i> NASTAVENÍ</a>
-        <a href="note.html"><i class="fas fa-clipboard-list"></i> POZNÁMKY</a>
+        <a href="LED.html"><i class="fas fa-sun"></i> LED</a>
+        <!--a href="settings.html"><i class="fas fa-cog"></i> NASTAVENÍ</a-->
+        <!--a href="note.html"><i class="fas fa-clipboard-list"></i> POZNÁMKY</a-->
         <a href="feeder.html"><i class="fas fa-fish"></i> KRMENÍ</a>
 		<a href="fertdoser.html"><i class="fas fa-flask"></i> DÁVKOVAČ</a>
         <a href="alarm.html"><i class="fas fa-exclamation-triangle"></i> PORUCHY</a>
