@@ -39,7 +39,7 @@
                 </div>              
             </div>
             
-            <button class="btn-action grid-btn" onclick="triggerAction('feedStart')">
+            <button id="btnFeedStart" class="btn-action grid-btn" onclick="triggerAction('feedStart')">
                 <i class="fas fa-play"></i> DÁVKA (START)
             </button>
 
@@ -52,22 +52,27 @@
     <div id="footer-placeholder"></div>  
     
     <script>
-        // Funkce pro odesílání ovládacích příkazů přes MQTT
-        function triggerAction(command) {
-            const heslo = sessionStorage.getItem('mqtt-heslo');
-            
-            // Ověříme, zda je MQTT klient připojen
-            if (typeof client !== 'undefined' && client && client.connected && heslo) {
-                const temaPozadavek = `smart_aqua_cs/${heslo}/pozadavek`;
-                
-                console.log(`Posílám akční příkaz [${command}] do tématu: ${temaPozadavek}`);
-                
-                // Publikujeme příkaz (např. "feedStart" nebo "feedReset")
-                client.publish(temaPozadavek, command);
-            } else {
-                alert("Nelze provést akci. MQTT klient není připojen!");
-            }
-        }
+        // funkce triggerAction uvnitř feeder.html s pojistkou:
+		function triggerAction(command) {
+			// Pojistka: Pokud klikneme na START a tlačítko má vlastnost disabled, akci neprovedeme
+			if (command === 'feedStart' && document.getElementById('btnFeedStart')?.disabled) {
+				return;
+			}
+
+			const heslo = sessionStorage.getItem('mqtt-heslo');
+			
+			// Ověříme, zda je MQTT klient připojen
+			if (typeof client !== 'undefined' && client && client.connected && heslo) {
+				const temaPozadavek = `smart_aqua_cs/${heslo}/pozadavek`;
+				
+				console.log(`Posílám akční příkaz [${command}] do tématu: ${temaPozadavek}`);
+				
+				// Publikujeme příkaz (např. "feedStart" nebo "feedReset")
+				client.publish(temaPozadavek, command);
+			} else {
+				alert("Nelze provést akci. MQTT klient není připojen!");
+			}
+		}
     </script> 
   </body>
 </html>

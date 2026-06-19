@@ -158,12 +158,28 @@ function pripojitMQTT(heslo) {
                 // Ikona krmítka (Feeder)
                 if (data.feedStat !== undefined) {
                     const feederIcon = document.getElementById("feederIcon");
+					const btnFeedStart = document.getElementById("btnFeedStart"); // Načteme si naše tlačítko
+					
                     if (feederIcon) {
                         feederIcon.classList.remove("feeder-offline", "feeder-error", "feeder-active", "feeder-empty");
+						// --- KRMÍTKO JE OFFLINE ---
                         if (!(flagFeeder & (1 << 7))) { 
                             feederIcon.classList.add("feeder-offline");
                             feederIcon.title = "Krmítko: Offline (odpojeno)";
-                        } else {
+							if (btnFeedStart) {	// Pokud tlačítko na této stránce existuje, zablokujeme ho 
+								btnFeedStart.disabled = true;
+								btnFeedStart.style.opacity = "0.5";       	// Vizuálně ho zašedneme
+								btnFeedStart.style.cursor = "not-allowed"; 	// Změníme kurzor myši
+							}
+                        } 
+						// --- KRMÍTKO JE ONLINE ---
+						else {
+							// Odblokujeme tlačítko (protože krmítko komunikuje)
+							if (btnFeedStart) {
+								btnFeedStart.disabled = false;
+								btnFeedStart.style.opacity = "1";
+								btnFeedStart.style.cursor = "pointer";
+							}
                             if ((flagFeeder & (1 << 0)) !== 0) { 
                                 if (!(flagFeeder & (1 << 6))) { 
                                     feederIcon.classList.add("feeder-active");
