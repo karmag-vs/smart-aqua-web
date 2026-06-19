@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>ESP Aqua CS - H COVER</title>
+    <title>ESP Aqua CS - T,H COVER</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/svg+xml" href="aqua.svg">
     <meta charset="UTF-8">
@@ -15,7 +15,13 @@
      
     <div class="content">
         <div class="cards">
-        
+			<div class="card">
+              <p><i class="fas fa-thermometer-half" style="color:DimGrey;"></i>
+                  TEPLOTA KRYT
+                  <span class="reading">
+                  <span id="tempCover">--</span> &deg;C</span>
+               </p>
+            </div>
             <div class="card">
                 <p><i class="fas fa-tint" style="color:DimGrey;"></i>
                     VLHKOST
@@ -23,7 +29,9 @@
                     <span id="humCover">--</span> &percnt;</span>
                 </p>
 			</div>
-
+			<button class="btn-action grid-btn" onclick="openChart(0)">
+                <i class="fas fa-chart-line"></i> HISTORIE (GRAF)
+            </button>
             <!--div class="card"></div-->
 			<button class="btn-action grid-btn" onclick="openChart(1)">
 				<i class="fas fa-chart-line"></i> HISTORIE (GRAF)

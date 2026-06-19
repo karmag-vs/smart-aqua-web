@@ -281,7 +281,7 @@ function createNavbar() {
         "LED1.html" : "LED 1",
         "LED2.html" : "LED 2",
         "TC.html"   : "TEPLOTA KRYT",
-        "HC.html"   : "VLHKOST KRYT",        
+        "HC.html"   : "TEPL,VLHKOST KRYT",        
         "TW.html"   : "TEPLOTA VODA",
         "PHCO2.html": "PH VODA - CO2",
         "WL.html"   : "HLADINA",
