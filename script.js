@@ -557,6 +557,10 @@ function loadFertilizer(data) {
 // 1. Otevření modálu - GRAF (MQTT verze)
 //==============================================================================
 function openChart(id) {
+	if (!document.getElementById('chartModal')) {
+        console.log("Modál grafu nenalezen, generuji za běhu...");
+        if (typeof createModals === "function") createModals();
+    }
     const config = sensorConfig[id];
     if (!config) {
         console.error("Konfigurace pro senzor ID " + id + " nebyla nalezena.");
@@ -569,7 +573,13 @@ function openChart(id) {
     if (titleEl) {
         titleEl.innerText = `${config.name} [${config.unit}]`;  
     }
-    document.getElementById('chartModal').style.display = 'block';
+    const modal = document.getElementById('chartModal');
+    if (modal) {
+        modal.style.display = 'block';
+    } else {
+        console.error("Chyba: Prvek 'chartModal' se nepodařilo vytvořit ani za běhu. Chybí 'modals-placeholder' v HTML?");
+        return;
+    }
     
     // Vyžádáme si čerstvá data grafu přes MQTT
     refreshChart();
