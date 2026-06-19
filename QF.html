@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ESP Aqua CS - QF</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/svg+xml" href="aqua.svg">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="script.js"></script>
+  </head>
+  <body>
+    <div id="nav-placeholder"></div>  <!-- navigacni menu -->
+     
+    <div class="content">
+        <div class="cards">
+        
+            <div class="card">
+                <p><i class="fas fa-spinner" style="color:DodgerBlue;"></i>
+                    PRŮTOK
+                    <span class="reading">
+                    <span id="flowWater">--</span> L/MIN</span>
+                </p>
+            </div>
+
+            <div class="card">
+                <p><i class="fas fa-exchange-alt" style="color:DodgerBlue;"></i>
+                    VÝMĚNY
+                    <span class="reading">
+                    <span id="AVchanges">--</span> h<sup>-1</sup> / 
+                    <span id="TMchanges">--</span> x</span>
+                </p>
+            </div>
+            
+            <button class="btn-action grid-btn" onclick="openChart(4)">
+                <i class="fas fa-chart-line"></i> HISTORIE (GRAF)
+            </button>
+            
+            <button class="btn-action grid-btn" onclick="openSensorSettings(4, 'flowWater', ['inst','enAlm','req','act','cal','hys','min','max'])">
+                <i class="fas fa-cog"></i> NASTAVENÍ 
+            </button>
+        </div>
+    </div>
+
+    <div id="modals-placeholder"></div>
+    <div id="footer-placeholder"></div>  
+    
+    <script>
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = "none";
+            }
+        }
+    </script> 
+  </body>
+</html>
