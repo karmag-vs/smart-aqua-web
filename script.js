@@ -781,9 +781,11 @@ function vykresliGoogleChart(json) {
         };
 
         console.log("Kreslím Google Chart...");
-        const chart = new google.visualization.LineChart(chartDiv);
-        chart.draw(dataTable, options);
-        console.log("Vykreslení dokončeno!");
+        setTimeout(() => {
+            const chart = new google.visualization.LineChart(chartDiv);
+            chart.draw(dataTable, options);
+            console.log("Graf úspěšně vykreslen do viditelného okna!");
+        }, 50); // 50 milisekund stačí na to, aby display:block začal platit
         
     } catch (err) {
         console.error("Chyba při vykreslování Google Chartu:", err);
