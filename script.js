@@ -24,8 +24,12 @@ function potvrditPrihlaseni() {
 // --- 2. ASYNCHRONNÍ PŘIPOJENÍ K MQTT BROKERU ---
 function pripojitMQTT(heslo) {
     if (client) return; // Pojistka: pokud už klient existuje, podruhé ho nespouštíme
-
-    client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+    const uniqueClientId = 'aqua_web_' + Math.random().toString(16).substr(2, 8);
+    client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+        clientId: uniqueClientId,
+        keepalive: 60,
+        clean: true
+    });
 
     client.on('connect', () => {
         console.log('Připojeno k MQTT Brokeru s autorizovaným tématem.');
