@@ -490,6 +490,7 @@ function updateLedStatus(num, mode, power) {
 window.addEventListener('load', () => {
     createNavbar(); 
     createFooter(); 
+    createModals();
     setInterval(updateClock, 1000);
 	loadInitialTanks();
     // Pokud už uživatel heslo během této relace zadal, rovnou ho připojíme
