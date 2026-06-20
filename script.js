@@ -1,7 +1,10 @@
 // Načte knihovnu vždy, když je v HTML přítomen loader.js
 if (typeof google !== 'undefined') {
     google.charts.load('current', {'packages':['corechart']});
-    //console.log("Google Charts: Knihovna se začala načítat...");
+    console.log("Google Charts: Knihovna se začala načítat...");
+    google.charts.setOnLoadCallback(() => {
+        console.log("Knihovna Google Charts byla úspěšně inicializována a je připravena.");
+    });
 } else {
     console.log("Google Charts: V HTML chybí <script> tag pro loader.js!");
 }
