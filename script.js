@@ -624,12 +624,22 @@ function changeChartInterval() {
 // 3. Požadavek na data grafu přes MQTT
 //==============================================================================
 function refreshChart() {
-    if (!currentChartType) return; 
-    if (typeof google === 'undefined' || !google.visualization) return;
+    if (!currentChartType) {
+        console.error("Chyba: Není vybran žádný typ grafu.");
+        return;
+    }
+
+    // 🔴 TENTO ŘÁDEK MAŽEME (Ověření google vizualizace patří až do vykreslovací funkce)
+    // if (typeof google === 'undefined' || !google.visualization) return;
 
     const elementId = "temp_chart_div";
     const chartDiv = document.getElementById(elementId);
     if (!chartDiv) return; 
+
+    // Vpíšeme do okna načítací text, dokud z internetu nedorazí MQTT data
+    chartDiv.innerHTML = `<div style="color:var(--accent); text-align:center; padding-top:100px;">
+                            <i class="fas fa-spinner fa-spin"></i> Načítám data z ESP32...
+                          </div>`;
 
     const heslo = sessionStorage.getItem('mqtt-heslo');
     
