@@ -663,11 +663,27 @@ function refreshChart() {
 function vykresliGoogleChart(json) {
     const elementId = "temp_chart_div";
     const chartDiv = document.getElementById(elementId);
-    if (!chartDiv || typeof google === 'undefined' || !google.visualization) return;
+    
+    // 1. BEZPEČNOSTNÍ KONTROLA: Pokud Google Charts ještě neběží, nezačneme kreslit
+    if (!chartDiv) return;
+    if (typeof google === 'undefined' || !google.visualization || !google.visualization.DataTable) {
+        console.warn("Google Charts vizualizace ještě není připravena v paměti.");
+        chartDiv.innerHTML = "<div style='color:#eee; text-align:center; padding-top:50px;'>Inicializace grafu... Zkuste to za sekundu znovu.</div>";
+        return;
+    }
+
+    // 2. KONTROLA DAT: Pokud ESP32 poslalo prázdné pole
+    if (!json || !json.data || json.data.length === 0) {
+        chartDiv.innerHTML = "<div style='color:#eee; text-align:center; padding-top:50px;'>Žádná data k dispozici.</div>";
+        return;
+    }
 
     try {
         const dataTable = new google.visualization.DataTable();
         
+        // Bezpečné zjištění počtu hodnot podle reálného pole
+        const pocetHodnot = json.data.length;
+
         // 1. Sloupec: Čas (X)
         dataTable.addColumn('number', 'Vzorek');
         
@@ -681,7 +697,7 @@ function vykresliGoogleChart(json) {
 
         // Příprava dat pro Google Charts
         const rows = [];
-        for (let i = 0; i < json.numValues; i++) {
+        for (let i = 0; i < pocetHodnot; i++) {
             let val = json.data[i];
             let row = [i, val]; 
 
@@ -694,9 +710,11 @@ function vykresliGoogleChart(json) {
 
         dataTable.addRows(rows);
 
-        // Nastavení titulků osy X podle GraphX
+        // Nastavení titulků osy X podle GraphX (převod na číslo pro switch)
         let xAxisTitle = "Čas";
-        switch(parseInt(json.GraphX)) {
+        const intervalIdx = json.GraphX !== undefined ? parseInt(json.GraphX) : 0;
+
+        switch(intervalIdx) {
             case 0: xAxisTitle = "Poslední hodina (minuty)"; break;
             case 1: xAxisTitle = "Posledních 24 hodin"; break;
             case 2: xAxisTitle = "Posledních 7 dní"; break;
@@ -706,45 +724,57 @@ function vykresliGoogleChart(json) {
         let hAxisOptions = { 
             title: xAxisTitle,
             gridlines: { color: '#333' },
-            textStyle: { color: '#888' } 
+            textStyle: { color: '#888' },
+            titleTextStyle: { color: '#aaa' }
         };
         
         // Osa X - dělení podle časového intervalu
-        const gx = parseInt(json.GraphX);
-        if (gx === 3) { 
+        if (intervalIdx === 3) { 
             hAxisOptions.ticks = [{v: 0, f: '0'}, {v: 30, f: '5'}, {v: 60, f: '10'}, {v: 90, f: '15'}, {v: 120, f: '20'}, {v: 150, f: '25'}, {v: 180, f: '30'}];
-        } else if (gx === 2) { 
+        } else if (intervalIdx === 2) { 
             hAxisOptions.ticks = [{v: 0, f: '0'}, {v: 24, f: '1'}, {v: 48, f: '2'}, {v: 72, f: '3'}, {v: 96, f: '4'}, {v: 120, f: '5'}, {v: 144, f: '6'}, {v: 168, f: '7'}];
-        } else if (gx === 1) { 
+        } else if (intervalIdx === 1) { 
             hAxisOptions.ticks = [{v: 0, f: '0'}, {v: 24, f: '4'}, {v: 48, f: '8'}, {v: 72, f: '12'}, {v: 96, f: '16'}, {v: 120, f: '20'}, {v: 144, f: '24'}];
         }
 
+        // Pokud ESP posílá minVal/maxVal, zamkneme osu Y, aby graf „nelítal“ od nuly
+        let vAxisOptions = { 
+            gridlines: { color: '#333' },
+            textStyle: { color: '#888' } 
+        };
+        if (json.minVal !== undefined && json.maxVal !== undefined) {
+            vAxisOptions.viewWindow = {
+                min: json.minVal - (json.type === "PH" ? 0.2 : 1), // lehká rezerva pod limit
+                max: json.maxVal + (json.type === "PH" ? 0.2 : 1)  // lehká rezerva nad limit
+            };
+        }
+
         const options = {
-            title: `${json.type} Poslední vzorek ${json.lastH}:${json.lastM < 10 ? '0'+json.lastM : json.lastM}`,
+            title: `${json.type} - Poslední vzorek v ${json.lastH}:${json.lastM < 10 ? '0'+json.lastM : json.lastM}`,
             titleTextStyle: { color: '#eeeeee', bold: true },
             backgroundColor: 'transparent',
-            chartArea: { width: '85%', height: '70%' },
+            chartArea: { width: '85%', height: '70%', top: 40 },
             curveType: 'function',
-            colors: [currentChartColor, '#f1c40f', '#e74c3c', '#e74c3c'],
+            colors: [currentChartColor || '#3498db', '#f1c40f', '#e74c3c', '#e74c3c'],
             hAxis: hAxisOptions,
-            vAxis: { 
-                gridlines: { color: '#333' },
-                textStyle: { color: '#888' } 
-            },
+            vAxis: vAxisOptions,
             legend: { position: 'bottom', textStyle: { color: '#eee' } },
             series: {
-                1: { lineDashStyle: [4, 4], lineWidth: 2 },
-                2: { lineDashStyle: [2, 2], lineWidth: 2 },
-                3: { lineDashStyle: [2, 2], lineWidth: 2 }
+                0: { lineWidth: 3 }, // Tlustší čára pro samotné hodnoty senzoru
+                1: { lineDashStyle: [4, 4], lineWidth: 1.5 },
+                2: { lineDashStyle: [2, 2], lineWidth: 1.5 },
+                3: { lineDashStyle: [2, 2], lineWidth: 1.5 }
             }
         };
 
+        console.log("Kreslím Google Chart...");
         const chart = new google.visualization.LineChart(chartDiv);
         chart.draw(dataTable, options);
+        console.log("Vykreslení dokončeno!");
         
     } catch (err) {
         console.error("Chyba při vykreslování Google Chartu:", err);
-        chartDiv.innerHTML = "Chyba při zpracování dat grafu.";
+        chartDiv.innerHTML = "<div style='color:#e74c3c; text-align:center; padding-top:50px;'>Chyba při vykreslování grafu.</div>";
     }
 }
 
