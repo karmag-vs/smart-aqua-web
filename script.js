@@ -676,6 +676,9 @@ function vykresliGoogleChart(json) {
     if (typeof google === 'undefined' || !google.visualization || !google.visualization.DataTable) {
         console.warn("Google Charts vizualizace ještě není připravena v paměti.");
         chartDiv.innerHTML = "<div style='color:#eee; text-align:center; padding-top:50px;'>Inicializace grafu... Zkuste to za sekundu znovu.</div>";
+        setTimeout(() => {
+            vykresliGoogleChart(json);
+        }, 500);
         return;
     }
 
