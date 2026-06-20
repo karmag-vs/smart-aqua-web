@@ -575,6 +575,7 @@ function loadFertilizer(data) {
 // 1. Otevření modálu - GRAF (MQTT verze)
 //==============================================================================
 function openChart(id) {
+    console.log("---> KLIKNUTO NA SENZOR S ID:", id);
 	if (!document.getElementById('chartModal')) {
         console.log("Modál grafu nenalezen, generuji za běhu...");
         if (typeof createModals === "function") createModals();
