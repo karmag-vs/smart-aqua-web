@@ -1,3 +1,10 @@
+// Načte knihovnu vždy, když je v HTML přítomen loader.js
+if (typeof google !== 'undefined') {
+    google.charts.load('current', {'packages':['corechart']});
+    //console.log("Google Charts: Knihovna se začala načítat...");
+} else {
+    console.log("Google Charts: V HTML chybí <script> tag pro loader.js!");
+}
 // Globální proměnné
 let serverTimeOffset = 0; // Globální proměnná pro synchronizaci času s ESP32
 let client = null;        // Klienta vytvoříme až po ověření hesla
