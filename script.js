@@ -630,6 +630,14 @@ function changeChartInterval() {
         client.publish(`smart_aqua_cs/${heslo}/pozadavek`, 'changeTimeChart');
         // Poznámka: ESP32 interval přepne a v reakci na to pošle zpět buď 
         // aktualizovaný stav intervalu, nebo rovnou nová data grafu.
+        setTimeout(() => {
+            if (currentChartType) {
+                console.log(`Následně vyžaduji čerstvá data grafu pro: ${currentChartType}`);
+                client.publish(`smart_aqua_cs/${heslo}/pozadavek`, `getChart:${currentChartType}`);
+            } else {
+                console.warn("Interval přepnut, ale aktuální typ grafu (currentChartType) není definován.");
+            }
+        }, 150); // 150 milisekund stačí, aby ESP32 nebylo zahlcené
     } else {
         console.error("Nelze změnit interval. MQTT klient odpojen.");
     }
