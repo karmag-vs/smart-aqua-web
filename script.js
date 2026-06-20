@@ -98,9 +98,14 @@ function pripojitMQTT(heslo) {
 	            }
 				// --- ZPRACOVÁNÍ DAT PRO GRAF ---
 				if (data.type === "chart" || (data.data !== undefined && data.numValues !== undefined)) {
-					console.log("Přijata data grafu přes MQTT.");
-					vykresliGoogleChart(data);
+					console.log("Přijata data grafu přes MQTT. Obsah JSONu:", data);
 					
+					if (typeof vykresliGoogleChart === 'function') {
+                        console.log("Volám funkci vykresliGoogleChart()...");
+                        vykresliGoogleChart(data);
+                    } else {
+                        console.error("Chyba: Funkce vykresliGoogleChart() neexistuje ve script.js!");
+                    }
 					// Zároveň z dat grafu aktualizujeme popisek časového tlačítka (graphX)
 					const labels = [" 1H", " 24H", " 7D", " 30D"];
 					const labelEl = document.getElementById('timeRangeLabel');
