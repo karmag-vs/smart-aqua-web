@@ -169,9 +169,10 @@ function pripojitMQTT(heslo) {
 
                 const bell1 = document.getElementById("bell1");	// Kontrola stranky FEED
 				const bell2 = document.getElementById("bell2");	
-				if (bell1) {
-					bell1.style.color  = (flagFeeder & (1 << 1)) ? "#2ecc71" : "Grey";	// ikona 1
-					bell2.style.color  = (flagFeeder & (1 << 2)) ? "#2ecc71" : "Grey";	// ikona 2
+				if (bell1 && bell2) {
+                    const numericFeedStat = parseInt(data.feedStat, 10) || 0;
+					bell1.style.color  = (numericFeedStat & (1 << 1)) ? "#2ecc71" : "Grey";	// ikona 1
+					bell2.style.color  = (numericFeedStat & (1 << 2)) ? "#2ecc71" : "Grey";	// ikona 2
                     updateElement("feedDose1", data.feedD1);		// davka c.1 hh:mm
                     updateElement("feedDose2", data.feedD2);		// davka c.2 hh:mm
                     updateElement("totalDoses", data.totD);         // celkem davek
