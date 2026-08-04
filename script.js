@@ -133,7 +133,11 @@ function pripojitMQTT(heslo) {
 						labelEl.innerText = labels[parseInt(data.graphX)] || " --";
 					}
 					// Po změně intervalu si rovnou vyžádáme nový graf
-					refreshChart();
+					if (currentChartType) {
+                        refreshChart();
+                    } else {
+                        console.warn("Přijata změna graphX z ESP32, ale žádný graf zrovna není otevřen.");
+                    }
 					return;
 				}
 				
