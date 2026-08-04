@@ -160,19 +160,25 @@ function pripojitMQTT(heslo) {
                 updateElement("alarmNo", data.alarmNo);
                 updateElement("dKH", data.dKH, 1);
                 updateElement("co2W", data.co2W);
-				
-                updateElement("feedDose1", data.feedD1);		// davka c.1 hh:mm
-				updateElement("feedDose2", data.feedD2);		// davka c.2 hh:mm
-				updateElement("totalDoses", data.totD);         // celkem davek
-				updateElement("currDose", data.currD);          // aktual. davka krmitka
-				updateElement("currSubDose", data.currSD);		// aktul. subdavka
-				updateElement("totalSubDoses", data.totSD);		// celkem subdavek
-				
+				                			
 				updateElement("feedStat", data.feedStat);
                 const flagFeeder = data.feedStat;
                 
 				updateElement("fertStat", data.fertStat);
                 const flagFert = data.fertStat;
+
+                const bell1 = document.getElementById("bell1");	// Kontrola stranky FEED
+				const bell2 = document.getElementById("bell2");	
+				if (bell1) {
+					bell1.style.color  = (flagFeeder & (1 << 1)) ? "#2ecc71" : "Grey";	// ikona 1
+					bell2.style.color  = (flagFeeder & (1 << 2)) ? "#2ecc71" : "Grey";	// ikona 2
+                    updateElement("feedDose1", data.feedD1);		// davka c.1 hh:mm
+                    updateElement("feedDose2", data.feedD2);		// davka c.2 hh:mm
+                    updateElement("totalDoses", data.totD);         // celkem davek
+                    updateElement("currDose", data.currD);          // aktual. davka krmitka
+                    updateElement("currSubDose", data.currSD);		// aktul. subdavka
+                    updateElement("totalSubDoses", data.totSD);		// celkem subdavek
+                }
 
                 // Ikona krmítka (Feeder)
                 if (data.feedStat !== undefined) {
