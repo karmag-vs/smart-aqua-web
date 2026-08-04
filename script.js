@@ -134,9 +134,10 @@ function pripojitMQTT(heslo) {
 					}
 					// Po změně intervalu si rovnou vyžádáme nový graf
 					if (currentChartType) {
-                        refreshChart();
-                    } else {
-                        console.warn("Přijata změna graphX z ESP32, ale žádný graf zrovna není otevřen.");
+                        // Dáme ESP32 100ms pauzu na přípravu dat před odesláním dotazu
+                        setTimeout(() => {
+                            refreshChart();
+                        }, 100);
                     }
 					return;
 				}
@@ -641,14 +642,14 @@ function changeChartInterval() {
         client.publish(`smart_aqua_cs/${heslo}/pozadavek`, 'changeTimeChart');
         // Poznámka: ESP32 interval přepne a v reakci na to pošle zpět buď 
         // aktualizovaný stav intervalu, nebo rovnou nová data grafu.
-        setTimeout(() => {
+        /*setTimeout(() => {
             if (currentChartType) {
                 console.log(`Následně vyžaduji čerstvá data grafu pro: ${currentChartType}`);
                 client.publish(`smart_aqua_cs/${heslo}/pozadavek`, `getChart:${currentChartType}`);
             } else {
                 console.warn("Interval přepnut, ale aktuální typ grafu (currentChartType) není definován.");
             }
-        }, 150); // 150 milisekund stačí, aby ESP32 nebylo zahlcené
+        }, 150); // 150 milisekund stačí, aby ESP32 nebylo zahlcené*/
     } else {
         console.error("Nelze změnit interval. MQTT klient odpojen.");
     }
