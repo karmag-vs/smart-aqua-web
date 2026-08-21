@@ -9,10 +9,12 @@ if (typeof google !== 'undefined') {
     console.log("Google Charts: V HTML chybí <script> tag pro loader.js!");
 }
 // Globální proměnné
-let serverTimeOffset = 0; // Globální proměnná pro synchronizaci času s ESP32
-let client = null;        // Klienta vytvoříme až po ověření hesla
+let serverTimeOffset = 0; 	// Globální proměnná pro synchronizaci času s ESP32
+let client = null;        	// Klienta vytvoříme až po ověření hesla
 let currentChartType = null;
 let currentChartColor = "#2ecc71";
+let authTimeout = null;		// proměnná pro časovač ověření hesla
+
 const sensorConfig = {
     0: { name: "TEPL.KRYT",  unit: "°C",    color: "#6fa8dc",  id: "TC"},
     1: { name: "VLHKOST",  unit: "%",     color: "#bcbcbc",  id: "HC"},
@@ -52,6 +54,14 @@ function potvrditPrihlaseni() {
         sessionStorage.setItem('mqtt-heslo', heslo);
         //document.getElementById('login-overlay').style.display = 'none';
         pripojitMQTT(heslo); // Spustíme připojení k brokeru
+		// ZRUŠÍME případný předchozí timer
+        if (authTimeout) clearTimeout(authTimeout);
+
+        // SPUSTÍME TIMER: Pokud ESP32 do 3.5 sekund neodpoví, považujeme heslo za špatné!
+        authTimeout = setTimeout(() => {
+            console.warn("ESP32 neodpovědělo v limitu. Pravděpodobně špatné heslo!");
+            zobrazChybuHesla("Špatné heslo nebo ESP32 neodpovídá!");
+        }, 3500);		
     } else {
 		zobrazChybuHesla("Zadejte heslo!");
 	}
@@ -114,6 +124,15 @@ function pripojitMQTT(heslo) {
         const hesloAktualni = sessionStorage.getItem('mqtt-heslo');
         
         if (topic === `smart_aqua_cs/${hesloAktualni}/vystup`) {
+			// HESLO JE SPRÁVNÉ! (ESP32 odpovídá na správném tématu)
+	        if (authTimeout) {
+	            clearTimeout(authTimeout);
+	            authTimeout = null;
+	        }
+	        // Schovat přihlašovací okno
+	        const overlay = document.getElementById('login-overlay');
+	        if (overlay) overlay.style.display = 'none';
+			
             try {
                 const data = JSON.parse(payload.toString());
 
