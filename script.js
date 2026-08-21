@@ -22,11 +22,35 @@ const sensorConfig = {
     5: { name: "HLADINA",  unit: "cm",    color: "#54a0ff",  id: "WL"}
 };
 // --- 1. PŘIHLAŠOVACÍ LOGIKA ---
+function zobrazChybuHesla(zprava = "Špatné heslo!") {
+    sessionStorage.removeItem('mqtt-heslo'); // Smažeme neplatné heslo
+    
+    const overlay = document.getElementById('login-overlay');
+    const errEl = document.getElementById('login-error');
+    
+    if (errEl) {
+        errEl.innerText = zprava;
+        errEl.style.display = 'block'; // Zobrazíme červený text
+    }
+    if (overlay) {
+        overlay.style.display = 'flex'; // Znovuotveřeme přihlašovací okno
+    }
+    
+    // Pokud běžel klient, odpojíme ho
+    if (client) {
+        client.end(true);
+        client = null;
+    }
+}
+
 function potvrditPrihlaseni() {
+	const errEl = document.getElementById('login-error');
+    if (errEl) errEl.style.display = 'none'; // Schováme chybu při novém pokusu
+	
     const heslo = document.getElementById('input-password').value.trim();
     if (heslo) {
         sessionStorage.setItem('mqtt-heslo', heslo);
-        document.getElementById('login-overlay').style.display = 'none';
+        //document.getElementById('login-overlay').style.display = 'none';
         pripojitMQTT(heslo); // Spustíme připojení k brokeru
     }
 }
@@ -51,6 +75,7 @@ function pripojitMQTT(heslo) {
         client.subscribe(temaVystup, (err) => {
             if (!err) {
                 console.log(`Úspěšně přihlášeno k odběru tématu: ${temaVystup}`);
+				document.getElementById('login-overlay').style.display = 'none';
                 loadSystemInfo(); 										// Načtení systémových informací
                 client.publish(temaPozadavek, 'updateAll'); 			// První vyžádání dat akvária
 				if (window.location.pathname.includes("alarm.html")) {	// Alarmy
@@ -61,10 +86,16 @@ function pripojitMQTT(heslo) {
             	}
             } else {
                 console.error('Chyba při přihlášení k odběru:', err);
+				zobrazChybuHesla("Špatné heslo nebo chyba připojení!");
             }
         });
     });
-
+	
+	client.on('error', (err) => {
+    console.error('MQTT Chyba:', err);
+    zobrazChybuHesla("Špatné heslo!");
+	});
+	
     // --- 3. PRAVIDELNÁ ŽÁDOST O DATA (Interval běží uvnitř připojení) ---
     setInterval(() => {
         if (client && client.connected) {
@@ -373,6 +404,8 @@ function createNavbar() {
         <div style="background: #2a2a2a; padding: 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 280px;">
             <h3 style="margin-top: 0; color: #2ecc71; font-size: 20px;"><i class="fas fa-lock"></i> Smart Aqua CS</h3>
             <p style="color: #bbb; font-size: 14px; margin-bottom: 15px;">Zadejte přístupové heslo:</p>
+			<!-- CHYBOVÝ TEXT -->
+			<p id="login-error" style="display: none; color: #e74c3c; font-size: 13px; margin-top: -5px; margin-bottom: 10px; font-weight: bold;">Špatné heslo !!!</p>
             <input type="password" id="input-password" style="padding: 10px; width: 100%; box-sizing: border-box; border: none; border-radius: 4px; margin-bottom: 20px; text-align: center; font-size: 16px; background: #444; color: white;">
             <br>
             <button onclick="potvrditPrihlaseni()" style="padding: 10px 25px; width: 100%; background: #2ecc71; border: none; color: white; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 15px;">Vstoupit</button>
