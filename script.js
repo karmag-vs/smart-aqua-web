@@ -52,7 +52,9 @@ function potvrditPrihlaseni() {
         sessionStorage.setItem('mqtt-heslo', heslo);
         //document.getElementById('login-overlay').style.display = 'none';
         pripojitMQTT(heslo); // Spustíme připojení k brokeru
-    }
+    } else {
+		zobrazChybuHesla("Zadejte heslo!");
+	}
 }
 
 // --- 2. ASYNCHRONNÍ PŘIPOJENÍ K MQTT BROKERU ---
@@ -75,8 +77,11 @@ function pripojitMQTT(heslo) {
         client.subscribe(temaVystup, (err) => {
             if (!err) {
                 console.log(`Úspěšně přihlášeno k odběru tématu: ${temaVystup}`);
-				document.getElementById('login-overlay').style.display = 'none';
-                loadSystemInfo(); 										// Načtení systémových informací
+				// HESLO JE SPRÁVNÉ -> schovat přihlašovací okno!
+				const overlay = document.getElementById('login-overlay');
+            	if (overlay) overlay.style.display = 'none';
+                
+				loadSystemInfo(); 										// Načtení systémových informací
                 client.publish(temaPozadavek, 'updateAll'); 			// První vyžádání dat akvária
 				if (window.location.pathname.includes("alarm.html")) {	// Alarmy
             		client.publish(temaPozadavek, 'getAlarmLogs');
