@@ -27,6 +27,11 @@ const sensorConfig = {
 function zobrazChybuHesla(zprava = "Špatné heslo!") {
     sessionStorage.removeItem('mqtt-heslo'); // Smažeme neplatné heslo
     
+    if (authTimeout) {
+        clearTimeout(authTimeout);
+        authTimeout = null;
+    }
+
     const overlay = document.getElementById('login-overlay');
     const errEl = document.getElementById('login-error');
     
@@ -40,7 +45,7 @@ function zobrazChybuHesla(zprava = "Špatné heslo!") {
     
     // Pokud běžel klient, odpojíme ho
     if (client) {
-        client.end(true);
+        try { client.end(true); } catch(e) {}
         client = null;
     }
 }
@@ -49,7 +54,9 @@ function potvrditPrihlaseni() {
 	const errEl = document.getElementById('login-error');
     if (errEl) errEl.style.display = 'none'; // Schováme chybu při novém pokusu
 	
-    const heslo = document.getElementById('input-password').value.trim();
+    const inputEl = document.getElementById('input-password');
+    const heslo = inputEl ? inputEl.value.trim() : "";
+
     if (heslo) {
         sessionStorage.setItem('mqtt-heslo', heslo);
         //document.getElementById('login-overlay').style.display = 'none';
@@ -69,7 +76,12 @@ function potvrditPrihlaseni() {
 
 // --- 2. ASYNCHRONNÍ PŘIPOJENÍ K MQTT BROKERU ---
 function pripojitMQTT(heslo) {
-    if (client) return; // Pojistka: pokud už klient existuje, podruhé ho nespouštíme
+    // Vždy vyčistíme starého klienta před novým pokusem!
+    if (client) {
+        try { client.end(true); } catch(e) {}
+        client = null;
+    }
+
     const uniqueClientId = 'aqua_web_' + Math.random().toString(16).substr(2, 8);
     client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
         clientId: uniqueClientId,
@@ -78,38 +90,35 @@ function pripojitMQTT(heslo) {
     });
 
     client.on('connect', () => {
-        console.log('Připojeno k MQTT Brokeru s autorizovaným tématem.');
+        console.log('Připojeno k MQTT Brokeru HiveMQ.');
         
-        // Sestavení dynamických témat obsahujících heslo
         const temaVystup = `smart_aqua_cs/${heslo}/vystup`;
         const temaPozadavek = `smart_aqua_cs/${heslo}/pozadavek`;
 
         client.subscribe(temaVystup, (err) => {
             if (!err) {
-                console.log(`Úspěšně přihlášeno k odběru tématu: ${temaVystup}`);
-				// HESLO JE SPRÁVNÉ -> schovat přihlašovací okno!
-				const overlay = document.getElementById('login-overlay');
-            	if (overlay) overlay.style.display = 'none';
+                console.log(`Přihlášeno k odběru: ${temaVystup}. Čekám na odezvu ESP32...`);
                 
-				loadSystemInfo(); 										// Načtení systémových informací
-                client.publish(temaPozadavek, 'updateAll'); 			// První vyžádání dat akvária
-				if (window.location.pathname.includes("alarm.html")) {	// Alarmy
-            		client.publish(temaPozadavek, 'getAlarmLogs');
-        		}
-				if (window.location.pathname.includes("fertdoser.html")) { 
-                loadInitialTanks();
-            	}
+                loadSystemInfo(); 										
+                client.publish(temaPozadavek, 'updateAll'); 			
+                
+                if (window.location.pathname.includes("alarm.html")) {	
+                    client.publish(temaPozadavek, 'getAlarmLogs');
+                }
+                if (window.location.pathname.includes("fertdoser.html")) { 
+                    loadInitialTanks();
+                }
             } else {
-                console.error('Chyba při přihlášení k odběru:', err);
-				zobrazChybuHesla("Špatné heslo nebo chyba připojení!");
+                console.error('Chyba při přihlášení:', err);
+                zobrazChybuHesla("Chyba připojení k brokeru!");
             }
         });
     });
-	
-	client.on('error', (err) => {
-    console.error('MQTT Chyba:', err);
-    zobrazChybuHesla("Špatné heslo!");
-	});
+
+    client.on('error', (err) => {
+        console.error('MQTT Chyba:', err);
+        zobrazChybuHesla("Chyba MQTT komunikace!");
+    });
 	
     // --- 3. PRAVIDELNÁ ŽÁDOST O DATA (Interval běží uvnitř připojení) ---
     setInterval(() => {
@@ -122,7 +131,7 @@ function pripojitMQTT(heslo) {
     // --- 4. PŘÍJEM DAT Z ESP32 ---
     client.on('message', (topic, payload) => {
         const hesloAktualni = sessionStorage.getItem('mqtt-heslo');
-        
+
         if (topic === `smart_aqua_cs/${hesloAktualni}/vystup`) {
 			// HESLO JE SPRÁVNÉ! (ESP32 odpovídá na správném tématu)
 	        if (authTimeout) {
@@ -132,7 +141,8 @@ function pripojitMQTT(heslo) {
 	        // Schovat přihlašovací okno
 	        const overlay = document.getElementById('login-overlay');
 	        if (overlay) overlay.style.display = 'none';
-			
+			const errEl = document.getElementById('login-error');
+            if (errEl) errEl.style.display = 'none';
             try {
                 const data = JSON.parse(payload.toString());
 
