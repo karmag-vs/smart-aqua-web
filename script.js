@@ -436,7 +436,7 @@ function createNavbar() {
 
     <div id="login-overlay" style="display: ${displayStyle}; position: fixed; top:0; left:0; width:100vw; height:100vh; background: #1a1a1a; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; font-family: sans-serif; color: white;">
         <div style="background: #2a2a2a; padding: 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); width: 280px;">
-            <h3 style="margin-top: 0; color: #2ecc71; font-size: 20px;"><i class="fas fa-lock"></i> Smart Aqua CS</h3>
+            <h3 style="margin-top: 0; color: #2ecc71; font-size: 20px;"><i class="fas fa-lock"></i>Aqua CS</h3>
             <p style="color: #bbb; font-size: 14px; margin-bottom: 15px;">Zadejte přístupové heslo:</p>
 			<!-- CHYBOVÝ TEXT -->
 			<p id="login-error" style="display: none; color: #e74c3c; font-size: 13px; margin-top: -5px; margin-bottom: 10px; font-weight: bold;">Špatné heslo !!!</p>
